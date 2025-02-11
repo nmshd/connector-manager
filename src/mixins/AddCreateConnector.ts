@@ -8,7 +8,21 @@ export function AddCreateConnector<TBase extends TUIBaseConstructor>(Base: TBase
     }
 
     protected async createConnector() {
-      // TODO: implement createConnector
+      console.log("Creating connector...")
+
+      const installable = await this.getInstallableReleases()
+
+      console.log(installable.map((release) => release.name).join("\n"))
+    }
+
+    private async getInstallableReleases() {
+      const releases = await this.octokit.rest.repos.listReleases({
+        owner: "nmshd",
+        repo: "connector",
+        per_page: 100,
+      })
+
+      return releases.data.filter((release) => release.assets.length > 0 && release.assets.some((asset) => asset.name.endsWith(".zip")))
     }
   }
 }

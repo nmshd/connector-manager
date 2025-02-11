@@ -7,6 +7,8 @@ export class TUI extends TUIBaseWithMixins {
   public async run() {
     await this.showStartupMessage()
 
+    // TODO: check for clientid and clientsecret and connection string
+
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
     while (true) {
       const result = await prompts({
