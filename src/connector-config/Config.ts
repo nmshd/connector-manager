@@ -1,7 +1,15 @@
 import * as fs from "fs"
 
 export class Config {
-  public dbConnectionString = "mongodb://localhost"
+  public dbConnectionString = ""
+  public platformClientId = ""
+  public platformClientSecret = ""
+  public platformBaseUrl = ""
+
+  public get isInitialized(): boolean {
+    return !!this.dbConnectionString && !!this.platformClientId && !!this.platformClientSecret && !!this.platformBaseUrl
+  }
+
   public connectors: ConnectorDefinition[] = []
 
   private constructor(private readonly configPath: string) {}
