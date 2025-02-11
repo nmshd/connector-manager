@@ -13,7 +13,5 @@ const argv = await yargs(hideBin(process.argv))
   .help()
   .alias("help", "h").argv
 
-console.log(argv)
-
 const tui = new TUI(argv)
 await tui.run()
