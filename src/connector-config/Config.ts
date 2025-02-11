@@ -6,6 +6,7 @@ export class Config {
   public dbConnectionString = ""
   public platformClientId = ""
   public platformClientSecret = ""
+  public platformBaseUrl = ""
   public connectors: ConnectorDefinition[] = []
 
   private constructor() {} // eslint-disable-line @typescript-eslint/no-empty-function
