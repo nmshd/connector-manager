@@ -1,11 +1,22 @@
 #!/usr/bin/env node
 
+import chalk from "chalk"
+import { readFile } from "fs/promises"
 import pm2 from "pm2"
 import yargs from "yargs"
 import { hideBin } from "yargs/helpers"
 import { CreateCommand } from "./commands/CreateCommand.js"
 import { InitCommand } from "./commands/InitCommand.js"
 import { ListCommand } from "./commands/ListCommand.js"
+import { getAppDir } from "./utils/getAppDir.js"
+
+const jsonString = (await readFile(new URL("../package.json", import.meta.url))).toString()
+const packageJson = JSON.parse(jsonString)
+
+console.log(`Welcome to the ${chalk.blue("enmeshed Connector Manager")}!`)
+console.log(`Manager Version: ${chalk.yellow(packageJson.version)}`)
+console.log(`Storing files in: ${chalk.yellow(getAppDir())}`)
+console.log("")
 
 await yargs(hideBin(process.argv))
   .command("init", "Initialized the connector manager.", InitCommand.builder, async (args) => await new InitCommand().run(args, false))
