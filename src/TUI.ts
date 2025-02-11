@@ -71,7 +71,10 @@ export class TUI extends TUIBaseWithMixins {
     const signals = ["SIGHUP", "SIGINT", "SIGQUIT", "SIGILL", "SIGTRAP", "SIGABRT", "SIGBUS", "SIGFPE", "SIGUSR1", "SIGSEGV", "SIGUSR2", "SIGTERM"]
 
     for (const signal of signals) {
-      process.on(signal, () => this.pm2.disconnect())
+      process.on(signal, () => {
+        this.pm2.disconnect()
+        process.exit(0)
+      })
     }
   }
 }
