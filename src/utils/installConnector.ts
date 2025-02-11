@@ -8,15 +8,14 @@ import { $ } from "zx"
 export async function installConnector(appDir: string, downloadUrl: string, version: string) {
   const zipPath = await downloadConnector(downloadUrl, `${appDir}/connectors`, version)
 
-  const outPath = `${appDir}/connectors/connector-${version}`
-  fs.mkdirSync(outPath, { recursive: true })
+  const connectorDir = `${appDir}/connectors/connector-${version}`
+  if (!fs.existsSync(connectorDir)) fs.mkdirSync(connectorDir, { recursive: true })
 
-  const zip = new AdmZip(zipPath)
-  zip.extractAllTo(outPath)
+  extractConnector(connectorDir, zipPath)
 
-  await $({ stdio: "ignore" })`npm install --prefix ${outPath} --production`
+  await npmInstallConnector(connectorDir)
 
-  return outPath
+  return connectorDir
 }
 
 async function downloadConnector(downloadUrl: string, zipDir: string, version: string) {
@@ -33,4 +32,17 @@ async function downloadConnector(downloadUrl: string, zipDir: string, version: s
   await finished(Readable.fromWeb(response.body! as ReadableStream<any>).pipe(fileStream))
 
   return zipPath
+}
+
+function extractConnector(connectorDir: string, zipPath: string) {
+  if (fs.existsSync(`${connectorDir}/dist`)) return
+
+  const zip = new AdmZip(zipPath)
+  zip.extractAllTo(connectorDir)
+}
+
+async function npmInstallConnector(connectorDir: string) {
+  if (fs.existsSync(`${connectorDir}/node_modules`)) return
+
+  await $`npm install --prefix ${connectorDir} --production`
 }
