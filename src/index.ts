@@ -13,5 +13,5 @@ const argv = await yargs(hideBin(process.argv))
   .help()
   .alias("help", "h").argv
 
-const tui = new TUI(argv)
+const tui = await TUI.create(argv)
 await tui.run()

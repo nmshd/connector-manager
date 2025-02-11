@@ -4,16 +4,23 @@ import path from "path"
 import prompts from "prompts"
 import { Config } from "./connector-config/Config.js"
 import { TUIBaseWithMixins } from "./mixins/TUIBaseWithMixins.js"
+import { getAppDir } from "./utils/getAppDir.js"
 
 export class TUI extends TUIBaseWithMixins {
-  public constructor(private readonly settings: { dashboard: boolean }) {
-    super()
+  public constructor(
+    config: Config,
+    private readonly settings: { dashboard: boolean }
+  ) {
+    super(config)
+  }
+
+  public static async create(settings: { dashboard: boolean }) {
+    const config = await Config.load(path.join(getAppDir(), "config.json"))
+    return new TUI(config, settings)
   }
 
   public async run() {
     await this.showStartupMessage()
-
-    await Config.load(path.join(this.appDir, "config.json"))
 
     await this.connectToPM2()
     this.scheduleKillTask()
@@ -51,7 +58,7 @@ export class TUI extends TUIBaseWithMixins {
 
     console.log(`Welcome to the ${chalk.blue("enmeshed Connector Manager TUI")}!`)
     console.log(`TUI Version: ${chalk.yellow(packageJson.version)}`)
-    console.log(`Storing files in: ${chalk.yellow(this.appDir)}`)
+    console.log(`Storing files in: ${chalk.yellow(getAppDir())}`)
     console.log("")
   }
 

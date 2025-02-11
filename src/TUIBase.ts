@@ -1,7 +1,7 @@
-import fs from "fs"
 import { Octokit } from "octokit"
 import pm2 from "pm2"
 import prompts from "prompts"
+import { Config } from "./connector-config/Config.js"
 
 export type TUIBaseConstructor = new (...args: any[]) => TUIBase
 
@@ -10,6 +10,11 @@ export interface Choice extends prompts.Choice {
 }
 
 export class TUIBase {
+  readonly #config: Config
+  public get config(): Config {
+    return this.#config
+  }
+
   readonly #octokit: Octokit = new Octokit()
   public get octokit(): Octokit {
     return this.#octokit
@@ -20,16 +25,8 @@ export class TUIBase {
     return this.#pm2
   }
 
-  public get appDir(): string {
-    const base = process.env.APPDATA ?? (process.platform === "darwin" ? `${process.env.HOME}/Library/Preferences` : `${process.env.HOME}/.local/share`)
-
-    const appDir = `${base}/enmeshed-connector-manager`
-
-    if (!fs.existsSync(appDir)) {
-      fs.mkdirSync(appDir, { recursive: true })
-    }
-
-    return appDir
+  public constructor(config: Config) {
+    this.#config = config
   }
 
   protected choices: Choice[] = []

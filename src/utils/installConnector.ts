@@ -6,9 +6,10 @@ import { ReadableStream } from "stream/web"
 import { $ } from "zx"
 
 export async function installConnector(appDir: string, downloadUrl: string, version: string) {
-  const zipPath = await downloadConnector(downloadUrl, `${appDir}/connectors`, version)
+  const releasesDir = `${appDir}/releases`
+  const zipPath = await downloadConnector(downloadUrl, releasesDir, version)
 
-  const connectorDir = `${appDir}/connectors/connector-${version}`
+  const connectorDir = `${releasesDir}/connector-${version}`
   if (!fs.existsSync(connectorDir)) fs.mkdirSync(connectorDir, { recursive: true })
 
   extractConnector(connectorDir, zipPath)

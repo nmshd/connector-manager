@@ -1,40 +1,28 @@
 import * as fs from "fs"
 
 export class Config {
-  static #instance: Config | undefined
-
-  public dbConnectionString = ""
-  public platformClientId = ""
-  public platformClientSecret = ""
-  public platformBaseUrl = ""
+  public dbConnectionString = "mongodb://localhost"
   public connectors: ConnectorDefinition[] = []
 
-  private constructor() {} // eslint-disable-line @typescript-eslint/no-empty-function
+  private constructor(private readonly configPath: string) {}
 
-  public static async load(configPath: string): Promise<void> {
+  public static async load(configPath: string): Promise<Config> {
     if (fs.existsSync(configPath)) {
       const configFile = await fs.promises.readFile(configPath, "utf-8")
       const configData = JSON.parse(configFile)
 
-      this.#instance = Object.assign(new Config(), configData)
-    }
-  }
-
-  public static get instance(): Config {
-    if (!this.#instance) {
-      throw new Error("Config not loaded. Call Config.load() first.")
+      return Object.assign(new Config(configPath), configData)
     }
 
-    return this.#instance
+    return new Config(configPath)
   }
 
-  public async save(configPath: string): Promise<void> {
-    await fs.promises.writeFile(configPath, JSON.stringify(this, null, 2))
+  public async save(): Promise<void> {
+    await fs.promises.writeFile(this.configPath, JSON.stringify(this, null, 2))
   }
 }
 
 export interface ConnectorDefinition {
-  connectorConfigFile: string
   version: string
-  displayName: string
+  name: string
 }
