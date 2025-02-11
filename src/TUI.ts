@@ -47,6 +47,7 @@ export class TUI extends TUIBaseWithMixins {
 
     console.log(`Welcome to the ${chalk.blue("enmeshed Connector Manager TUI")}!`)
     console.log(`TUI Version: ${chalk.yellow(packageJson.version)}`)
+    console.log(`Storing files in: ${chalk.yellow(this.appDir)}`)
     console.log("")
   }
 
