@@ -1,4 +1,3 @@
-import fs from "fs"
 import { Octokit } from "octokit"
 import pm2 from "pm2"
 import prompts from "prompts"
@@ -18,18 +17,6 @@ export class TUIBase {
   readonly #pm2: typeof pm2 = new (pm2 as any).custom()
   public get pm2(): typeof pm2 {
     return this.#pm2
-  }
-
-  public get appDir(): string {
-    const base = process.env.APPDATA ?? (process.platform === "darwin" ? `${process.env.HOME}/Library/Preferences` : `${process.env.HOME}/.local/share`)
-
-    const appDir = `${base}/enmeshed-connector-manager`
-
-    if (!fs.existsSync(appDir)) {
-      fs.mkdirSync(appDir, { recursive: true })
-    }
-
-    return appDir
   }
 
   protected choices: Choice[] = []

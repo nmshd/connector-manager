@@ -3,6 +3,7 @@ import { readFile } from "fs/promises"
 import prompts from "prompts"
 import { Config } from "./connector-config/Config.js"
 import { TUIBaseWithMixins } from "./mixins/TUIBaseWithMixins.js"
+import { getAppDir } from "./utils/getAppDir.js"
 
 export class TUI extends TUIBaseWithMixins {
   public constructor(private readonly settings: { dashboard: boolean }) {
@@ -50,7 +51,7 @@ export class TUI extends TUIBaseWithMixins {
 
     console.log(`Welcome to the ${chalk.blue("enmeshed Connector Manager TUI")}!`)
     console.log(`TUI Version: ${chalk.yellow(packageJson.version)}`)
-    console.log(`Storing files in: ${chalk.yellow(this.appDir)}`)
+    console.log(`Storing files in: ${chalk.yellow(getAppDir())}`)
     console.log("")
   }
 
