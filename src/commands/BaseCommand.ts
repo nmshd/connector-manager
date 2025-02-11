@@ -34,5 +34,5 @@ export abstract class BaseCommand<TArgs> {
     }
   }
 
-  protected abstract runInternal(args: TArgs): Promise<void>
+  protected abstract runInternal(args: TArgs): Promise<void> | void
 }
