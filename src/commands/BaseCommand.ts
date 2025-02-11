@@ -9,10 +9,10 @@ export abstract class BaseCommand<TArgs> {
   protected _processManager!: ProcessManager
   protected _config!: Config
 
-  public async run(args: TArgs): Promise<any> {
+  public async run(args: TArgs, requireInit = true): Promise<any> {
     const config = await Config.load(path.join(getAppDir(), "config.json"))
 
-    if (!config.isInitialized) {
+    if (!config.isInitialized && requireInit) {
       console.error("The Connector Manager was not initialized. Please run the init command.")
       process.exit(1)
     }
