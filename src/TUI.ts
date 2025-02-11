@@ -1,6 +1,7 @@
 import chalk from "chalk"
 import { readFile } from "fs/promises"
 import prompts from "prompts"
+import { Config } from "./connector-config/Config.js"
 import { TUIBaseWithMixins } from "./mixins/TUIBaseWithMixins.js"
 
 export class TUI extends TUIBaseWithMixins {
@@ -10,6 +11,8 @@ export class TUI extends TUIBaseWithMixins {
 
   public async run() {
     await this.showStartupMessage()
+
+    await Config.load()
 
     await this.connectToPM2()
     this.scheduleKillTask()
