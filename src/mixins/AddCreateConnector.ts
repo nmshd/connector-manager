@@ -34,7 +34,7 @@ export function AddCreateConnector<TBase extends TUIBaseConstructor>(Base: TBase
 
       if (!selected.release) return
 
-      await installConnector(getAppDir(), selected.release.downloadUrl, selected.release.version)
+      await installConnector(this.appDir, selected.release.downloadUrl, selected.release.version)
     }
 
     private async getInstallableReleases() {
