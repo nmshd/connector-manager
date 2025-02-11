@@ -4,10 +4,20 @@ import prompts from "prompts"
 import { TUIBaseWithMixins } from "./mixins/TUIBaseWithMixins.js"
 
 export class TUI extends TUIBaseWithMixins {
+  public constructor(private readonly settings: { dashboard: boolean }) {
+    super()
+  }
+
   public async run() {
     await this.showStartupMessage()
 
-    // TODO: check for clientid and clientsecret and connection string
+    await this.connectToPM2()
+    this.scheduleKillTask()
+
+    if (this.settings.dashboard) {
+      ;(this.pm2 as any).dashboard()
+      return
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
     while (true) {
@@ -26,6 +36,9 @@ export class TUI extends TUIBaseWithMixins {
         console.log(chalk.red("An Error occurred: "), error)
       }
     }
+
+    this.pm2.disconnect()
+    process.exit(0)
   }
 
   private async showStartupMessage() {
@@ -35,5 +48,29 @@ export class TUI extends TUIBaseWithMixins {
     console.log(`Welcome to the ${chalk.blue("enmeshed Connector Manager TUI")}!`)
     console.log(`TUI Version: ${chalk.yellow(packageJson.version)}`)
     console.log("")
+  }
+
+  private async connectToPM2() {
+    console.log("Connecting to process manager...")
+
+    const promise = new Promise<void>((resolve, reject) =>
+      this.pm2.connect(false, (err: any) => {
+        if (err) return reject(err)
+
+        resolve()
+      })
+    )
+
+    const timeout = new Promise<void>((_, reject) => setTimeout(() => reject(new Error("Connection to PM2 timed out")), 1000))
+
+    await Promise.race([promise, timeout])
+  }
+
+  private scheduleKillTask() {
+    const signals = ["SIGHUP", "SIGINT", "SIGQUIT", "SIGILL", "SIGTRAP", "SIGABRT", "SIGBUS", "SIGFPE", "SIGUSR1", "SIGSEGV", "SIGUSR2", "SIGTERM"]
+
+    for (const signal of signals) {
+      process.on(signal, () => this.pm2.disconnect())
+    }
   }
 }

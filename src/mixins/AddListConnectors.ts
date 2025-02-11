@@ -1,3 +1,4 @@
+import { ProcessDescription } from "pm2"
 import { TUIBaseConstructor } from "../TUIBase.js"
 
 export function AddListConnectors<TBase extends TUIBaseConstructor>(Base: TBase) {
@@ -8,7 +9,17 @@ export function AddListConnectors<TBase extends TUIBaseConstructor>(Base: TBase)
     }
 
     protected async listConnectors() {
-      // TODO: implement listConnectors
+      await this._listConnectors()
+    }
+
+    private async _listConnectors() {
+      await new Promise<ProcessDescription[]>((resolve, reject) =>
+        this.pm2.list((err: any, list) => {
+          if (err) return reject(err)
+
+          resolve(list)
+        })
+      )
     }
   }
 }
