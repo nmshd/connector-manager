@@ -1,3 +1,4 @@
+import chalk from "chalk"
 import fs from "fs"
 import * as yargs from "yargs"
 import { getAppDir } from "../utils/getAppDir.js"
@@ -63,6 +64,6 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
 
     await this._processManager.start(args.name)
 
-    console.log(`Successfully created the connector '${args.name}'.`)
+    console.log(`Successfully created the connector ${chalk.green(args.name)}.`)
   }
 }

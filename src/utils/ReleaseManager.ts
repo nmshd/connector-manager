@@ -1,4 +1,5 @@
 import AdmZip from "adm-zip"
+import chalk from "chalk"
 import fs from "fs"
 import { Octokit } from "octokit"
 import { Readable } from "stream"
@@ -26,17 +27,29 @@ export class ReleaseManager {
   }
 
   public async exists(version: string): Promise<string | undefined> {
-    const octokit = new Octokit()
-    const release = await octokit.rest.repos.getReleaseByTag({
-      owner: "nmshd",
-      repo: "connector",
-      tag: version,
-    })
+    const release = await this.getGithubRelease(version)
 
-    if (release.status !== 200) return `The release '${version}' does not exist.`
+    if (!release) return `The release ${chalk.red(version)} does not exist.`
 
-    if (!release.data.assets.some((asset) => asset.name.endsWith(".zip") && asset.state === "uploaded")) {
-      return `The release '${version}' is not supported. Only versions greater than 6.14.2 are supported.`
+    if (!release.assets.some((asset) => asset.name.endsWith(".zip") && asset.state === "uploaded")) {
+      return `The release ${chalk.red(version)} is not supported. Only versions greater than 6.14.2 are supported.`
+    }
+  }
+
+  private async getGithubRelease(version: string) {
+    try {
+      const octokit = new Octokit()
+
+      const release = await octokit.rest.repos.getReleaseByTag({
+        owner: "nmshd",
+        repo: "connector",
+        tag: version,
+      })
+
+      if (release.status !== 200) return undefined
+      return release.data
+    } catch (_) {
+      return undefined
     }
   }
 
@@ -46,16 +59,10 @@ export class ReleaseManager {
     const zipPath = `${zipDir}/connector-${version}.zip`
     if (fs.existsSync(zipPath)) return zipPath
 
-    const octokit = new Octokit()
-    const release = await octokit.rest.repos.getReleaseByTag({
-      owner: "nmshd",
-      repo: "connector",
-      tag: version,
-    })
+    const release = await this.getGithubRelease(version)
+    if (!release?.assets) throw new Error("no release / assets found")
 
-    if (!release.data.assets) throw new Error("no assets found")
-
-    const zipAsset = release.data.assets.find((asset) => asset.name.endsWith(".zip") && asset.state === "uploaded")
+    const zipAsset = release.assets.find((asset) => asset.name.endsWith(".zip") && asset.state === "uploaded")
     if (!zipAsset) throw new Error("no zip asset found")
 
     const response = await fetch(zipAsset.browser_download_url)
