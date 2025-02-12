@@ -46,7 +46,6 @@ export class ReleaseManager {
         tag: version,
       })
 
-      if (release.status !== 200) return undefined
       return release.data
     } catch (_) {
       return undefined
