@@ -28,8 +28,7 @@
     "octokit": "^4.1.1",
     "pm2": "^5.4.3",
     "table": "^6.9.0",
-    "yargs": "^17.7.2",
-    "zx": "^8.3.2"
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@js-soft/eslint-config-ts": "^1.6.13",

@@ -1,11 +1,11 @@
 import AdmZip from "adm-zip"
 import chalk from "chalk"
+import { spawn } from "child_process"
 import fs from "fs"
 import { Octokit } from "octokit"
 import { Readable } from "stream"
 import { finished } from "stream/promises"
 import { ReadableStream } from "stream/web"
-import { $ } from "zx"
 import { getAppDir } from "./getAppDir.js"
 
 export class ReleaseManager {
@@ -83,6 +83,16 @@ export class ReleaseManager {
   private async npmInstallConnector(connectorDir: string) {
     if (fs.existsSync(`${connectorDir}/node_modules`)) return
 
-    await $({ stdio: "ignore" })`npm install --prefix ${connectorDir} --production`
+    await new Promise<void>((resolve, reject) => {
+      const npmInstall = spawn("npm", ["install", "--prefix", connectorDir, "--production"], { stdio: "ignore" })
+
+      npmInstall.on("close", (code) => {
+        if (code !== 0) {
+          reject(new Error(`npm install failed with exit code ${code}`))
+          return
+        }
+        resolve()
+      })
+    })
   }
 }
