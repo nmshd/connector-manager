@@ -16,13 +16,21 @@ export class StopCommand extends BaseCommand<never> {
       })
 
   protected async runInternal(args: StopCommandArgs): Promise<void> {
-    if ("all" in args) return await this._processManager.stop("all")
+    if ("all" in args) {
+      console.log("Stopping all connectors...")
+      await this._processManager.stop("all")
+      console.log("All connectors stopped.")
+
+      return
+    }
 
     if (!this._config.connectors.find((c) => c.name === args.name)) {
       console.error(`A connector with the name ${chalk.red(args.name)} does not exist.`)
       process.exit(1)
     }
 
+    console.log(`Stopping connector ${chalk.green(args.name)}...`)
     await this._processManager.stop(args.name)
+    console.log(`Connector ${chalk.green(args.name)} stopped.`)
   }
 }

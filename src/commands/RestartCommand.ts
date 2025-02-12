@@ -16,13 +16,21 @@ export class RestartCommand extends BaseCommand<never> {
       })
 
   protected async runInternal(args: RestartCommandArgs): Promise<void> {
-    if ("all" in args) return await this._processManager.restart("all")
+    if ("all" in args) {
+      console.log("Restarting all connectors...")
+      await this._processManager.restart("all")
+      console.log("All connectors restarted.")
+
+      return
+    }
 
     if (!this._config.connectors.find((c) => c.name === args.name)) {
       console.error(`A connector with the name ${chalk.red(args.name)} does not exist.`)
       process.exit(1)
     }
 
+    console.log(`Restarting connector ${chalk.green(args.name)}...`)
     await this._processManager.restart(args.name)
+    console.log(`Connector ${chalk.green(args.name)} restarted.`)
   }
 }

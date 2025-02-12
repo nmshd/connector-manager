@@ -17,7 +17,7 @@ export class DeleteCommand extends BaseCommand<never> {
     }
 
     if (!args.yes) {
-      console.log("This will stop and delete the connector. Are you sure you want to continue? Re-run the command with the --yes flag to confirm.")
+      console.log(chalk.yellow("This will stop and delete the connector. Are you sure you want to continue? Re-run the command with the --yes flag to confirm."))
       process.exit(0)
     }
 
