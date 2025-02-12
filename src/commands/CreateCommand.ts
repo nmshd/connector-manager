@@ -1,5 +1,4 @@
 import chalk from "chalk"
-import fs from "fs"
 import * as yargs from "yargs"
 import { ConnectorDefinition } from "../connector-config/Config.js"
 import { BaseCommand } from "./BaseCommand.js"
@@ -40,35 +39,13 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
   }
 
   private async createConnector(name: string, version: string, apiKey: string, port: number): Promise<ConnectorDefinition> {
-    if (this._config.connectors.find((c) => c.name === name)) {
+    if (this._config.existsConnector(name)) {
       console.error(`A connector with the name ${chalk.red(name)} already exists.`)
       process.exit(1)
     }
 
-    const connectorDefinition: ConnectorDefinition = { name: name, version: version }
-    this._config.connectors.push(connectorDefinition)
+    const connectorDefinition = this._config.addConnector(version, name, apiKey, port)
     await this._config.save()
-
-    fs.writeFileSync(
-      this.getConnectorConfigFile(name),
-      JSON.stringify(
-        {
-          database: {
-            connectionString: this._config.dbConnectionString,
-            dbName: name,
-          },
-          transportLibrary: {
-            baseUrl: this._config.platformBaseUrl,
-            platformClientId: this._config.platformClientId,
-            platformClientSecret: this._config.platformClientSecret,
-          },
-          logging: { categories: { default: { appenders: ["console"] } } },
-          infrastructure: { httpServer: { apiKey, port } },
-        },
-        null,
-        2
-      )
-    )
 
     return connectorDefinition
   }

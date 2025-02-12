@@ -1,6 +1,4 @@
 import chalk from "chalk"
-import fs from "fs"
-import path from "path"
 import { table } from "table"
 import { Config, ConnectorDefinition } from "../connector-config/Config.js"
 import { getAppDir } from "../utils/getAppDir.js"
@@ -13,7 +11,7 @@ export abstract class BaseCommand<TArgs> {
   protected _config!: Config
 
   public async run(args: TArgs, requireInit = true): Promise<any> {
-    const config = await Config.load(path.join(getAppDir(), "config.json"))
+    const config = await Config.load(getAppDir())
 
     if (!config.isInitialized && requireInit) {
       console.error("The Connector Manager was not initialized. Please run the init command.")
@@ -37,27 +35,12 @@ export abstract class BaseCommand<TArgs> {
     }
   }
 
-  protected getConnectorConfigFile(connectorName: string): string {
-    return `${this.connectorsDir}/${connectorName}.json`
-  }
-
-  private get connectorsDir(): string {
-    const connectorsDir = `${getAppDir()}/connectors`
-
-    if (!fs.existsSync(connectorsDir)) fs.mkdirSync(connectorsDir, { recursive: true })
-
-    return connectorsDir
-  }
-
   protected abstract runInternal(args: TArgs): Promise<void> | void
 
   protected async showInstances(connectors: ConnectorDefinition[]): Promise<void> {
-    const tableEntries: string[][] = [["Name", "Version", "Status", "cpu", "mem", "Uptime", "PID", "Port", "Api Key"]]
+    const tableEntries: (string | number)[][] = [["Name", "Version", "Status", "cpu", "mem", "Uptime", "PID", "Port", "Api Key"]]
     for (const connector of connectors) {
       const status = await this._processManager.status(connector.name)
-
-      const configFile = this.getConnectorConfigFile(connector.name)
-      const config = JSON.parse(fs.readFileSync(configFile, "utf-8"))
 
       tableEntries.push([
         connector.name,
@@ -67,8 +50,8 @@ export abstract class BaseCommand<TArgs> {
         status?.monit?.memory ?? "",
         formatDuration(Date.now() - (status?.pm2_env?.pm_uptime ?? 0)),
         status?.pid ?? "",
-        config.infrastructure.httpServer.port,
-        config.infrastructure.httpServer.apiKey,
+        connector.config.infrastructure.httpServer.port.toString(),
+        connector.config.infrastructure.httpServer.apiKey,
       ])
     }
 
