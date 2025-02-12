@@ -23,6 +23,7 @@
     "watch": "node --watch --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' src/index.ts"
   },
   "dependencies": {
+    "@nmshd/connector-sdk": "^6.14.3",
     "adm-zip": "^0.5.16",
     "chalk": "^5.4.1",
     "octokit": "^4.1.1",
