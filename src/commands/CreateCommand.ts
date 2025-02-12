@@ -11,7 +11,13 @@ export interface CreateCommandArgs {
 
 export class CreateCommand extends BaseCommand<CreateCommandArgs> {
   public static builder: yargs.BuilderCallback<any, CreateCommandArgs> = (yargs: yargs.Argv) =>
-    yargs.option("name", { type: "string", demandOption: true }).option("version", { type: "string", demandOption: true })
+    yargs
+      .option("name", { type: "string", demandOption: true })
+      .option("version", { type: "string", demandOption: true })
+      .check((argv) => {
+        if (argv.name === "all") return "The name 'all' is reserved."
+        return true
+      })
 
   protected async runInternal(args: CreateCommandArgs): Promise<void> {
     const existsResponse = await this._releaseManager.exists(args.version)
