@@ -46,9 +46,9 @@ export abstract class BaseCommand<TArgs> {
         connector.name,
         connector.version,
         status?.pid ? chalk.green("running") : chalk.red("stopped"),
-        status?.monit?.cpu ?? "",
-        status?.monit?.memory ?? "",
-        formatDuration(Date.now() - (status?.pm2_env?.pm_uptime ?? 0)),
+        typeof status?.monit?.cpu !== "undefined" ? `${status.monit.cpu}%` : "",
+        typeof status?.monit?.memory !== "undefined" ? `${new Intl.NumberFormat("en", { maximumFractionDigits: 2 }).format(status.monit.memory / 1000000)}MB` : "",
+        status?.pm2_env?.pm_uptime ? formatDuration(Date.now() - status.pm2_env.pm_uptime) : "",
         status?.pid ?? "",
         connector.config.infrastructure.httpServer.port.toString(),
         connector.config.infrastructure.httpServer.apiKey,
@@ -67,8 +67,9 @@ const formatDuration = (ms: number) => {
     m: Math.floor(ms / 60000) % 60,
     s: Math.floor(ms / 1000) % 60,
   }
-  return Object.entries(time)
-    .filter((val) => val[1] !== 0)
-    .map(([key, val]) => `${val}${key}`)
-    .join(", ")
+
+  if (time.d > 0) return `${time.d}d${time.h}h`
+  if (time.h > 0) return `${time.h}h${time.m}m`
+  if (time.m > 0) return `${time.m}m${time.s}s`
+  return `${time.s}s`
 }
