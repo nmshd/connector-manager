@@ -1,4 +1,5 @@
 export * from "./CreateCommand.js"
+export * from "./DeleteCommand.js"
 export * from "./InitCommand.js"
 export * from "./ListCommand.js"
 export * from "./RestartCommand.js"

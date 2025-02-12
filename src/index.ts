@@ -5,21 +5,14 @@ import { readFile } from "fs/promises"
 import pm2 from "pm2"
 import yargs from "yargs"
 import { hideBin } from "yargs/helpers"
-import { CreateCommand, InitCommand, ListCommand, RestartCommand, StartCommand, StopCommand } from "./commands/index.js"
+import { CreateCommand, DeleteCommand, InitCommand, ListCommand, RestartCommand, StartCommand, StopCommand } from "./commands/index.js"
 import { getAppDir } from "./utils/getAppDir.js"
 
 await yargs(hideBin(process.argv))
   .command("init", "Initialized the connector manager.", InitCommand.builder, async (args) => await new InitCommand().run(args, false))
   .command("create", "Create a new connector instance", CreateCommand.builder, async (args) => await new CreateCommand().run(args))
   .command("list", "List all connector instances", ListCommand.builder, async (args) => await new ListCommand().run(args))
-  .command(
-    "delete",
-    "Delete a connector instance",
-    (argv) => argv,
-    () => {
-      throw new Error("unimplemented")
-    }
-  )
+  .command("delete", "Delete a connector instance", DeleteCommand.builder, async (args) => await new DeleteCommand().run(args))
   .command("start", "Start one or all connector instance(s)", StartCommand.builder, async (args) => await new StartCommand().run(args))
   .command("stop", "Stop one or all connector instance(s)", StopCommand.builder, async (args) => await new StopCommand().run(args))
   .command("restart", "Restart one or all connector instance(s)", RestartCommand.builder, async (args) => await new RestartCommand().run(args))
