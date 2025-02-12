@@ -39,16 +39,16 @@ export abstract class BaseCommand<TArgs> {
   protected abstract runInternal(args: TArgs): Promise<void> | void
 
   protected async showInstances(connectors: ConnectorDefinition[]): Promise<void> {
-    const tableEntries: (string | number)[][] = [["Name", "Version", "Status", "CPU", "Memory", "Uptime", "PID", "Port", "Api Key", "Http Status"]]
+    const tableEntries: (string | number)[][] = [["Name", "Version", "Status", "CPU", "Memory", "Uptime", "PID", "Port", "Api Key", "Health"]]
     for (const connector of connectors) {
       const status = await this._processManager.status(connector.name)
+
       const sdk = ConnectorClient.create({
         baseUrl: `http://localhost:${connector.config.infrastructure.httpServer.port}`,
         apiKey: connector.config.infrastructure.httpServer.apiKey,
       })
-      const health = await sdk.monitoring.getHealth()
-
-      const httpStatus = health.isHealthy ? chalk.green("UP") : chalk.red("DOWN")
+      const healthResponse = await sdk.monitoring.getHealth()
+      const health = healthResponse.isHealthy ? chalk.green("Healthy") : chalk.red("Unhealthy")
 
       tableEntries.push([
         connector.name,
@@ -60,7 +60,7 @@ export abstract class BaseCommand<TArgs> {
         status?.pid ?? "",
         connector.config.infrastructure.httpServer.port.toString(),
         connector.config.infrastructure.httpServer.apiKey,
-        httpStatus,
+        health,
       ])
     }
 
