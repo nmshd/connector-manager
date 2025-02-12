@@ -1,6 +1,5 @@
 import chalk from "chalk"
 import fs from "fs"
-import os from "os"
 import * as yargs from "yargs"
 import { BaseCommand } from "./BaseCommand.js"
 
@@ -17,10 +16,8 @@ export class LogsCommand extends BaseCommand<never> {
       process.exit(1)
     }
 
-    const homedir = os.homedir()
-    const pm2LogsDir = `${homedir}/.pm2/logs`
-
-    const logs = fs.readFileSync(`${pm2LogsDir}/${args.name}-out.log`, "utf8")
+    const connector = this._config.getConnector(args.name)
+    const logs = fs.readFileSync(connector!.logFilePath, "utf8")
 
     console.log(`Logs for connector ${chalk.green(args.name)}:`)
     console.log(logs)

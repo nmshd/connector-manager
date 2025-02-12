@@ -47,7 +47,10 @@ export class ProcessManager {
         {
           name: name,
           script: `${connectorPath}/dist/index.js`,
-          args: ["start", "-c", connectorFromConfig.configPath],
+          args: ["start", "-c", connectorFromConfig.configFilePath],
+          merge_logs: true,
+          output: connectorFromConfig.logFilePath,
+          error: connectorFromConfig.logFilePath,
         },
         (err: any) => {
           if (err) reject(err)

@@ -28,8 +28,8 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
     console.log("Creating connector...")
 
     const apiKey = "OD3fMLcBGyQ2eCpI9JdTYRozltF"
-    const port = 8080 + this._config.connectors.length - 1
-    const connectorDefinition: ConnectorDefinition = await this.createConnector(args.name, args.version, apiKey, port)
+    const port = 8080 + this._config.connectors.length
+    const connectorDefinition = await this.createConnector(args.name, args.version, apiKey, port)
 
     await this._processManager.start(args.name)
 

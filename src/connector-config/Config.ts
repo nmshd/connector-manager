@@ -17,7 +17,10 @@ export class Config {
     return path.join(this.appDir, "config.json")
   }
 
-  public connectors: ConnectorDefinition[] = []
+  #connectors: ConnectorDefinition[] = []
+  public get connectors(): ConnectorDefinition[] {
+    return this.#connectors
+  }
 
   private constructor(private readonly appDir: string) {}
 
@@ -38,7 +41,7 @@ export class Config {
     this.platformClientId = json.platformClientId
     this.platformClientSecret = json.platformClientSecret
     this.platformBaseUrl = json.platformBaseUrl
-    this.connectors = await Promise.all(json.connectors.map(async (c: any) => await ConnectorDefinition.load(c, this.appDir)))
+    this.#connectors = await Promise.all(json.connectors.map(async (c: any) => await ConnectorDefinition.load(c, this.appDir)))
   }
 
   public async save(): Promise<void> {
@@ -49,8 +52,8 @@ export class Config {
     await fs.promises.writeFile(this.configPath, JSON.stringify(this.toJson(), null, 2))
 
     await Promise.all(
-      this.connectors.map(async (connector) => {
-        const connectorConfigPath = connector.configPath
+      this.#connectors.map(async (connector) => {
+        const connectorConfigPath = connector.configFilePath
         const connectorsConfigPathDirectory = path.dirname(connectorConfigPath)
 
         if (!fs.existsSync(connectorsConfigPathDirectory)) {
@@ -63,8 +66,12 @@ export class Config {
 
     await Promise.all(
       this.deletedConnectors.map(async (c) => {
-        if (fs.existsSync(c.configPath)) {
-          await fs.promises.unlink(c.configPath)
+        if (fs.existsSync(c.configFilePath)) {
+          await fs.promises.unlink(c.configFilePath)
+        }
+
+        if (fs.existsSync(c.logFilePath)) {
+          await fs.promises.unlink(c.logFilePath)
         }
       })
     )
@@ -78,7 +85,7 @@ export class Config {
       platformClientId: this.platformClientId,
       platformClientSecret: this.platformClientSecret,
       platformBaseUrl: this.platformBaseUrl,
-      connectors: this.connectors.map((c) => c.toJson()),
+      connectors: this.#connectors.map((c) => c.toJson()),
     }
   }
 
@@ -96,26 +103,26 @@ export class Config {
       logging: { categories: { default: { appenders: ["console"] } } },
       infrastructure: { httpServer: { apiKey, port } },
     })
-    this.connectors.push(connector)
+    this.#connectors.push(connector)
     return connector
   }
 
   public deleteConnector(name: string): void {
-    const connector = this.connectors.find((c) => c.name === name)
+    const connector = this.#connectors.find((c) => c.name === name)
 
     if (!connector) return
 
-    this.connectors = this.connectors.filter((c) => c.name !== name)
+    this.#connectors = this.#connectors.filter((c) => c.name !== name)
 
     this.deletedConnectors.push(connector)
   }
 
   public existsConnector(name: string): boolean {
-    return this.connectors.some((c) => c.name === name)
+    return this.#connectors.some((c) => c.name === name)
   }
 
   public getConnector(name: string): ConnectorDefinition | undefined {
-    return this.connectors.find((c) => c.name === name)
+    return this.#connectors.find((c) => c.name === name)
   }
 }
 
@@ -127,12 +134,16 @@ export class ConnectorDefinition {
     public config: ConnectorConfig
   ) {}
 
-  public get configPath(): string {
-    return ConnectorDefinition.buildConfigPath(this.appDir, this.name)
+  public get configFilePath(): string {
+    return ConnectorDefinition.buildFilePath(this.appDir, this.name, "config.json")
+  }
+
+  public get logFilePath(): string {
+    return ConnectorDefinition.buildFilePath(this.appDir, this.name, "logs.txt")
   }
 
   public static async load(json: any, appDir: string): Promise<ConnectorDefinition> {
-    const configPath = this.buildConfigPath(appDir, json.name)
+    const configPath = this.buildFilePath(appDir, json.name, "config.json")
     const configContent = await fs.promises.readFile(configPath)
     const configJson = JSON.parse(configContent.toString())
     return new ConnectorDefinition(appDir, json.version, json.name, configJson)
@@ -145,8 +156,8 @@ export class ConnectorDefinition {
     }
   }
 
-  private static buildConfigPath(appDir: string, name: string): string {
-    return path.join(appDir, "connectors", `${name}.json`)
+  private static buildFilePath(appDir: string, name: string, file: string): string {
+    return path.join(appDir, "connectors", name, file)
   }
 }
 
