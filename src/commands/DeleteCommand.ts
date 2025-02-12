@@ -9,7 +9,7 @@ export interface DeleteCommandArgs {
 }
 
 export class DeleteCommand extends BaseCommand<never> {
-  public static builder: yargs.BuilderCallback<any, never> = (yargs: yargs.Argv) => yargs.option("name", { type: "string", requiresArg: true }).option("yes", { type: "boolean" })
+  public static builder: yargs.BuilderCallback<any, never> = (yargs: yargs.Argv) => yargs.option("name", { type: "string", demandOption: true }).option("yes", { type: "boolean" })
 
   protected async runInternal(args: DeleteCommandArgs): Promise<void> {
     if (!this._config.connectors.find((c) => c.name === args.name)) {

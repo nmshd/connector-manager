@@ -10,7 +10,7 @@ export class UpdateCommand extends BaseCommand<never> {
       .option("name", { type: "string" })
       .option("all", { type: "boolean" })
       .option("force", { type: "boolean" })
-      .option("version", { type: "string", requiresArg: true })
+      .option("version", { type: "string", demandOption: true })
       .conflicts("name", "all")
       .check((argv) => {
         if (!("name" in argv || "all" in argv)) return "Either --name or --all must be provided."
