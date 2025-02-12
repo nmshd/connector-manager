@@ -52,7 +52,7 @@ export abstract class BaseCommand<TArgs> {
   protected abstract runInternal(args: TArgs): Promise<void> | void
 
   protected async showInstances(connectors: ConnectorDefinition[]): Promise<void> {
-    const tableEntries: string[][] = [["Name", "Version", "Status", "Port", "Api Key"]]
+    const tableEntries: string[][] = [["Name", "Version", "Status", "cpu", "mem", "Uptime", "PID", "Port", "Api Key"]]
     for (const connector of connectors) {
       const status = await this._processManager.status(connector.name)
 
@@ -63,6 +63,10 @@ export abstract class BaseCommand<TArgs> {
         connector.name,
         connector.version,
         status?.pid ? chalk.green("running") : chalk.red("stopped"),
+        status?.monit?.cpu ?? "",
+        status?.monit?.memory ?? "",
+        formatDuration(Date.now() - (status?.pm2_env?.pm_uptime ?? 0)),
+        status?.pid ?? "",
         config.infrastructure.httpServer.port,
         config.infrastructure.httpServer.apiKey,
       ])
@@ -70,4 +74,18 @@ export abstract class BaseCommand<TArgs> {
 
     console.log(table(tableEntries))
   }
+}
+
+const formatDuration = (ms: number) => {
+  if (ms < 0) ms = -ms
+  const time = {
+    d: Math.floor(ms / 86400000),
+    h: Math.floor(ms / 3600000) % 24,
+    m: Math.floor(ms / 60000) % 60,
+    s: Math.floor(ms / 1000) % 60,
+  }
+  return Object.entries(time)
+    .filter((val) => val[1] !== 0)
+    .map(([key, val]) => `${val}${key}`)
+    .join(", ")
 }
