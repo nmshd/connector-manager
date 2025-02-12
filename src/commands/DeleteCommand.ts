@@ -1,5 +1,4 @@
 import chalk from "chalk"
-import fs from "fs"
 import * as yargs from "yargs"
 import { BaseCommand } from "./BaseCommand.js"
 
@@ -25,10 +24,8 @@ export class DeleteCommand extends BaseCommand<never> {
     await this._processManager.stop(args.name)
     await this._processManager.delete(args.name)
 
-    this._config.connectors = this._config.connectors.filter((c) => c.name !== args.name)
+    this._config.deleteConnector(args.name)
     await this._config.save()
-
-    fs.unlinkSync(this.getConnectorConfigFile(args.name))
 
     console.log(`Successfully stopped and deleted the connector ${chalk.red(args.name)}.\n`)
   }
