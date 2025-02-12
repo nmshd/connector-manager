@@ -85,7 +85,7 @@ export class ReleaseManager {
     if (fs.existsSync(path.join(connectorDir, "node_modules"))) return
 
     await new Promise<void>((resolve, reject) => {
-      const npmInstall = spawn("npm", ["install", "--prefix", connectorDir, "--production"], { stdio: "ignore" })
+      const npmInstall = spawn("npm", ["install", "--production"], { stdio: "ignore", cwd: connectorDir })
 
       npmInstall.on("close", (code) => {
         if (code !== 0) {
