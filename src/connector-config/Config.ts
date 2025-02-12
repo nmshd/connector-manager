@@ -1,4 +1,5 @@
-import * as fs from "fs"
+import fs from "fs"
+import path from "path"
 
 export class Config {
   public dbConnectionString = ""
@@ -15,22 +16,66 @@ export class Config {
   private constructor(private readonly configPath: string) {}
 
   public static async load(configPath: string): Promise<Config> {
-    if (fs.existsSync(configPath)) {
-      const configFile = await fs.promises.readFile(configPath, "utf-8")
-      const configData = JSON.parse(configFile)
+    const config = new Config(configPath)
 
-      return Object.assign(new Config(configPath), configData)
+    if (fs.existsSync(configPath)) {
+      const fileContentAsString = await fs.promises.readFile(configPath, "utf-8")
+      const fileContentAsJson = JSON.parse(fileContentAsString)
+      config.fillFromJson(fileContentAsJson)
     }
 
-    return new Config(configPath)
+    return config
+  }
+
+  private fillFromJson(json: any) {
+    this.dbConnectionString = json.dbConnectionString
+    this.platformClientId = json.platformClientId
+    this.platformClientSecret = json.platformClientSecret
+    this.platformBaseUrl = json.platformBaseUrl
+    this.connectors = json.connectors.map((c: any) => ConnectorDefinition.fromJson(c))
   }
 
   public async save(): Promise<void> {
-    await fs.promises.writeFile(this.configPath, JSON.stringify(this, null, 2))
+    const configDirectory = path.dirname(this.configPath)
+
+    if (!fs.existsSync(configDirectory)) {
+      await fs.promises.mkdir(configDirectory, { recursive: true })
+    }
+
+    await fs.promises.writeFile(this.configPath, JSON.stringify(this.toJson(), null, 2))
+  }
+
+  private toJson(): any {
+    return {
+      dbConnectionString: this.dbConnectionString,
+      platformClientId: this.platformClientId,
+      platformClientSecret: this.platformClientSecret,
+      platformBaseUrl: this.platformBaseUrl,
+      connectors: this.connectors.map((c) => c.toJson()),
+    }
+  }
+
+  public addConnector(version: string, name: string): ConnectorDefinition {
+    const connector = new ConnectorDefinition(version, name)
+    this.connectors.push(connector)
+    return connector
   }
 }
 
-export interface ConnectorDefinition {
-  version: string
-  name: string
+export class ConnectorDefinition {
+  public constructor(
+    public version: string,
+    public name: string
+  ) {}
+
+  public static fromJson(json: any): ConnectorDefinition {
+    return new ConnectorDefinition(json.version, json.name)
+  }
+
+  public toJson(): any {
+    return {
+      version: this.version,
+      name: this.name,
+    }
+  }
 }

@@ -45,8 +45,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
       process.exit(1)
     }
 
-    const connectorDefinition: ConnectorDefinition = { name: name, version: version }
-    this._config.connectors.push(connectorDefinition)
+    const connectorDefinition = this._config.addConnector(version, name)
     await this._config.save()
 
     fs.writeFileSync(
