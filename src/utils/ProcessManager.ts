@@ -77,9 +77,11 @@ export class ProcessManager {
     })
   }
 
-  public async stopAll() {
+  public async delete(name: string) {
+    if (name === "all") throw new Error("Cannot delete all connectors")
+
     await new Promise<void>((resolve, reject) => {
-      this.#pm2.stop("all", (err: any) => {
+      this.#pm2.delete(name, (err: any) => {
         if (err) reject(err)
         else resolve()
       })
@@ -89,15 +91,6 @@ export class ProcessManager {
   public async restart(name: string) {
     await new Promise<void>((resolve, reject) => {
       this.#pm2.restart(name, (err: any) => {
-        if (err) reject(err)
-        else resolve()
-      })
-    })
-  }
-
-  public async restartAll() {
-    await new Promise<void>((resolve, reject) => {
-      this.#pm2.restart("all", (err: any) => {
         if (err) reject(err)
         else resolve()
       })
