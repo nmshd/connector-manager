@@ -7,7 +7,7 @@ export class Config {
   public platformClientSecret = ""
   public platformBaseUrl = ""
 
-  private deletedConnectors: string[] = []
+  private deletedConnectors: ConnectorDefinition[] = []
 
   public get isInitialized(): boolean {
     return !!this.dbConnectionString && !!this.platformClientId && !!this.platformClientSecret && !!this.platformBaseUrl
@@ -50,11 +50,11 @@ export class Config {
 
     await Promise.all(
       this.connectors.map(async (connector) => {
-        const connectorsDir = path.join(this.appDir, "connectors")
-        const connectorConfigPath = path.join(connectorsDir, `${connector.name}.json`)
+        const connectorConfigPath = connector.configPath
+        const connectorsConfigPathDirectory = path.dirname(connectorConfigPath)
 
-        if (!fs.existsSync(connectorsDir)) {
-          await fs.promises.mkdir(connectorsDir, { recursive: true })
+        if (!fs.existsSync(connectorsConfigPathDirectory)) {
+          await fs.promises.mkdir(connectorsConfigPathDirectory, { recursive: true })
         }
 
         await fs.promises.writeFile(connectorConfigPath, JSON.stringify(connector.config, null, 2))
@@ -62,15 +62,14 @@ export class Config {
     )
 
     await Promise.all(
-      this.deletedConnectors.map(async (connectorName) => {
-        const connectorsDir = path.join(this.appDir, "connectors")
-        const connectorConfigPath = path.join(connectorsDir, `${connectorName}.json`)
-
-        if (fs.existsSync(connectorConfigPath)) {
-          await fs.promises.unlink(connectorConfigPath)
+      this.deletedConnectors.map(async (c) => {
+        if (fs.existsSync(c.configPath)) {
+          await fs.promises.unlink(c.configPath)
         }
       })
     )
+
+    this.deletedConnectors = []
   }
 
   private toJson(): any {
@@ -84,7 +83,7 @@ export class Config {
   }
 
   public addConnector(version: string, name: string, apiKey: string, port: number): ConnectorDefinition {
-    const connector = new ConnectorDefinition(version, name, {
+    const connector = new ConnectorDefinition(this.appDir, version, name, {
       database: {
         connectionString: this.dbConnectionString,
         dbName: name,
@@ -102,7 +101,14 @@ export class Config {
   }
 
   public deleteConnector(name: string): void {
+    const connector = this.connectors.find((c) => c.name === name)
+
+    if (!connector) return
+
     this.connectors = this.connectors.filter((c) => c.name !== name)
+
+    this.deletedConnectors.push(connector)
+  }
 
   public existsConnector(name: string): boolean {
     return this.connectors.some((c) => c.name === name)
@@ -115,16 +121,21 @@ export class Config {
 
 export class ConnectorDefinition {
   public constructor(
+    private readonly appDir: string,
     public version: string,
     public name: string,
     public config: ConnectorConfig
   ) {}
 
-  public static async load(json: any, configDirectory: string): Promise<ConnectorDefinition> {
-    const configPath = path.join(configDirectory, "connectors", `${json.name}.json`) // TODO: extract creation of config path
+  public get configPath(): string {
+    return ConnectorDefinition.buildConfigPath(this.appDir, this.name)
+  }
+
+  public static async load(json: any, appDir: string): Promise<ConnectorDefinition> {
+    const configPath = this.buildConfigPath(appDir, json.name)
     const configContent = await fs.promises.readFile(configPath)
     const configJson = JSON.parse(configContent.toString())
-    return new ConnectorDefinition(json.version, json.name, configJson)
+    return new ConnectorDefinition(appDir, json.version, json.name, configJson)
   }
 
   public toJson(): any {
@@ -132,6 +143,10 @@ export class ConnectorDefinition {
       version: this.version,
       name: this.name,
     }
+  }
+
+  private static buildConfigPath(appDir: string, name: string): string {
+    return path.join(appDir, "connectors", `${name}.json`)
   }
 }
 

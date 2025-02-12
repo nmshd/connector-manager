@@ -1,7 +1,5 @@
-import fs from "fs"
 import pm2 from "pm2"
 import { Config } from "../connector-config/Config.js"
-import { getAppDir } from "./getAppDir.js"
 import { ReleaseManager } from "./ReleaseManager.js"
 
 export class ProcessManager {
@@ -38,21 +36,18 @@ export class ProcessManager {
   }
 
   public async start(name: string) {
-    const fromConfig = this.config.connectors.find((c) => c.name === name)
-    if (!fromConfig) throw new Error("Connector not found in config")
+    const connectorFromConfig = this.config.getConnector(name)
 
-    const connectorsDir = `${getAppDir()}/connectors`
-    if (!fs.existsSync(connectorsDir)) fs.mkdirSync(connectorsDir, { recursive: true })
-    const configDir = `${connectorsDir}/${name}.json`
+    if (!connectorFromConfig) throw new Error("Connector not found in config")
 
-    const connectorPath = await new ReleaseManager().provideRelease(fromConfig.version)
+    const connectorPath = await new ReleaseManager().provideRelease(connectorFromConfig.version)
 
     await new Promise<void>((resolve, reject) => {
       this.#pm2.start(
         {
           name: name,
           script: `${connectorPath}/dist/index.js`,
-          args: ["start", "-c", configDir],
+          args: ["start", "-c", connectorFromConfig.configPath],
         },
         (err: any) => {
           if (err) reject(err)
