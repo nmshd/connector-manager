@@ -10,14 +10,6 @@ import { InitCommand } from "./commands/InitCommand.js"
 import { ListCommand } from "./commands/ListCommand.js"
 import { getAppDir } from "./utils/getAppDir.js"
 
-const jsonString = (await readFile(new URL("../package.json", import.meta.url))).toString()
-const packageJson = JSON.parse(jsonString)
-
-console.log(`Welcome to the ${chalk.blue("enmeshed Connector Manager")}!`)
-console.log(`Manager Version: ${chalk.yellow(packageJson.version)}`)
-console.log(`Storing files in: ${chalk.yellow(getAppDir())}`)
-console.log("")
-
 await yargs(hideBin(process.argv))
   .command("init", "Initialized the connector manager.", InitCommand.builder, async (args) => await new InitCommand().run(args, false))
   .command("create", "Create a new connector instance", CreateCommand.builder, async (args) => await new CreateCommand().run(args))
@@ -68,6 +60,20 @@ await yargs(hideBin(process.argv))
     (argv) => argv,
     () => {
       new (pm2 as any).custom().dashboard()
+    }
+  )
+  .command(
+    "info",
+    "show information about the connector manager",
+    (argv) => argv,
+    async () => {
+      const jsonString = (await readFile(new URL("../package.json", import.meta.url))).toString()
+      const packageJson = JSON.parse(jsonString)
+
+      console.log(`Welcome to the ${chalk.blue("enmeshed Connector Manager")}!`)
+      console.log(`Manager Version: ${chalk.yellow(packageJson.version)}`)
+      console.log(`Storing files in: ${chalk.yellow(getAppDir())}`)
+      console.log("")
     }
   )
   .demandCommand()
