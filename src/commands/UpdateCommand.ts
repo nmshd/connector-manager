@@ -44,5 +44,7 @@ export class UpdateCommand extends BaseCommand<never> {
     console.log(`Updating connector ${chalk.green(name)}...`)
 
     await Promise.resolve()
+
+    console.log(`Connector ${chalk.green(name)} updated.`)
   }
 }

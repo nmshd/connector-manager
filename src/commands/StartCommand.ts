@@ -16,13 +16,22 @@ export class StartCommand extends BaseCommand<never> {
       })
 
   protected async runInternal(args: StartCommandArgs): Promise<void> {
-    if ("all" in args) return await this._processManager.startAll()
+    if ("all" in args) {
+      console.log("Starting all connectors...")
+
+      await this._processManager.startAll()
+      console.log("All connectors started.")
+
+      return
+    }
 
     if (!this._config.connectors.find((c) => c.name === args.name)) {
       console.error(`A connector with the name ${chalk.red(args.name)} does not exist.`)
       process.exit(1)
     }
 
+    console.log(`Starting connector ${chalk.green(args.name)}...`)
     await this._processManager.start(args.name)
+    console.log(`Connector ${chalk.green(args.name)} started.`)
   }
 }
