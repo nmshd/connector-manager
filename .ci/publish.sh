@@ -1,5 +1,10 @@
 set -e
 set -x
 
-# TODO: enable this when we are ready to release
-# npx enhanced-publish --if-possible --use-preid-as-tag
+if [ -z "$VERSION" ]; then
+    echo "The environment variable 'VERSION' must be set."
+    exit 1
+fi
+
+npm version $VERSION
+npx enhanced-publish --if-possible --use-preid-as-tag
