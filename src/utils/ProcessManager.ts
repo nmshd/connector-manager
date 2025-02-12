@@ -60,12 +60,6 @@ export class ProcessManager {
     })
   }
 
-  public async startAll() {
-    for (const connector of this.config.connectors) {
-      await this.start(connector.name)
-    }
-  }
-
   public async stop(name: string) {
     await new Promise<void>((resolve, reject) => {
       this.#pm2.stop(name, (err: any) => {
