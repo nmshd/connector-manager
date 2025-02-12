@@ -5,7 +5,7 @@ import { readFile } from "fs/promises"
 import pm2 from "pm2"
 import yargs, { Argv } from "yargs"
 import { hideBin } from "yargs/helpers"
-import { CreateCommand, DeleteCommand, InitCommand, ListCommand, RestartCommand, StartCommand, StopCommand, UpdateCommand } from "./commands/index.js"
+import { CreateCommand, DeleteCommand, InitCommand, ListCommand, LogsCommand, RestartCommand, StartCommand, StopCommand, UpdateCommand } from "./commands/index.js"
 import { getAppDir } from "./utils/getAppDir.js"
 
 const noopBuilder = (argv: Argv) => argv
@@ -18,6 +18,7 @@ await yargs(hideBin(process.argv))
   .command("start", "Start one or all connector instance(s)", StartCommand.builder, async (args) => await new StartCommand().run(args))
   .command("stop", "Stop one or all connector instance(s)", StopCommand.builder, async (args) => await new StopCommand().run(args))
   .command("restart", "Restart one or all connector instance(s)", RestartCommand.builder, async (args) => await new RestartCommand().run(args))
+  .command("logs", "Show logs for a connector instance", LogsCommand.builder, async (args) => await new LogsCommand().run(args))
   .command("update", "Update one or all connector instance(s)", UpdateCommand.builder, async (args) => await new UpdateCommand().run(args))
   .command("dashboard", "show the dashboard", noopBuilder, () => new (pm2 as any).custom().dashboard())
   .command("info", "show information about the connector manager", noopBuilder, async () => {
