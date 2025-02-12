@@ -103,7 +103,13 @@ export class Config {
 
   public deleteConnector(name: string): void {
     this.connectors = this.connectors.filter((c) => c.name !== name)
-    this.deletedConnectors.push(name)
+
+  public existsConnector(name: string): boolean {
+    return this.connectors.some((c) => c.name === name)
+  }
+
+  public getConnector(name: string): ConnectorDefinition | undefined {
+    return this.connectors.find((c) => c.name === name)
   }
 }
 

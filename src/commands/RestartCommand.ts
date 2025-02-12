@@ -24,7 +24,7 @@ export class RestartCommand extends BaseCommand<never> {
       return
     }
 
-    if (!this._config.connectors.find((c) => c.name === args.name)) {
+    if (!this._config.existsConnector(args.name)) {
       console.error(`A connector with the name ${chalk.red(args.name)} does not exist.`)
       process.exit(1)
     }

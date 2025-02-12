@@ -39,7 +39,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
   }
 
   private async createConnector(name: string, version: string, apiKey: string, port: number): Promise<ConnectorDefinition> {
-    if (this._config.connectors.find((c) => c.name === name)) {
+    if (this._config.existsConnector(name)) {
       console.error(`A connector with the name ${chalk.red(name)} already exists.`)
       process.exit(1)
     }

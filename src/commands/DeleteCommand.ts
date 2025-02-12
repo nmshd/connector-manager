@@ -11,7 +11,7 @@ export class DeleteCommand extends BaseCommand<never> {
   public static builder: yargs.BuilderCallback<any, never> = (yargs: yargs.Argv) => yargs.option("name", { type: "string", demandOption: true }).option("yes", { type: "boolean" })
 
   protected async runInternal(args: DeleteCommandArgs): Promise<void> {
-    if (!this._config.connectors.find((c) => c.name === args.name)) {
+    if (!this._config.existsConnector(args.name)) {
       console.error(`A connector with the name ${chalk.red(args.name)} does not exist.`)
       process.exit(1)
     }
