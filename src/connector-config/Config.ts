@@ -89,7 +89,7 @@ export class Config {
     }
   }
 
-  public addConnector(version: string, name: string, apiKey: string, port: number): ConnectorDefinition {
+  public addConnector(version: string, name: string, port: number): ConnectorDefinition {
     const connector = new ConnectorDefinition(this.appDir, version, name, {
       database: {
         connectionString: this.dbConnectionString,
@@ -101,8 +101,11 @@ export class Config {
         platformClientSecret: this.platformClientSecret,
       },
       logging: { categories: { default: { appenders: ["console"] } } },
-      infrastructure: { httpServer: { apiKey, port } },
+      infrastructure: { httpServer: { apiKey: "", port } },
     })
+
+    connector.rotateApiKey()
+
     this.#connectors.push(connector)
     return connector
   }
@@ -147,6 +150,11 @@ export class ConnectorDefinition {
     const configContent = await fs.promises.readFile(configPath)
     const configJson = JSON.parse(configContent.toString())
     return new ConnectorDefinition(appDir, json.version, json.name, configJson)
+  }
+
+  public rotateApiKey(): void {
+    // TODO: better random generation
+    this.config.infrastructure.httpServer.apiKey = Math.random().toString(36).substring(2)
   }
 
   public toJson(): any {

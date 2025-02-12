@@ -1,6 +1,5 @@
 import chalk from "chalk"
 import * as yargs from "yargs"
-import { ConnectorDefinition } from "../connector-config/Config.js"
 import { BaseCommand } from "./BaseCommand.js"
 
 export interface CreateCommandArgs {
@@ -25,28 +24,21 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
       process.exit(1)
     }
 
+    if (this._config.existsConnector(args.name)) {
+      console.error(`A connector with the name ${chalk.red(args.name)} already exists.`)
+      process.exit(1)
+    }
+
     console.log("Creating connector...")
 
-    const apiKey = "OD3fMLcBGyQ2eCpI9JdTYRozltF"
     const port = 8080 + this._config.connectors.length
-    const connectorDefinition = await this.createConnector(args.name, args.version, apiKey, port)
+    const connector = this._config.addConnector(args.version, args.name, port)
+    await this._config.save()
 
     await this._processManager.start(args.name)
 
     console.log(`Successfully created the connector ${chalk.green(args.name)}.\n`)
 
-    await this.showInstances([connectorDefinition])
-  }
-
-  private async createConnector(name: string, version: string, apiKey: string, port: number): Promise<ConnectorDefinition> {
-    if (this._config.existsConnector(name)) {
-      console.error(`A connector with the name ${chalk.red(name)} already exists.`)
-      process.exit(1)
-    }
-
-    const connectorDefinition = this._config.addConnector(version, name, apiKey, port)
-    await this._config.save()
-
-    return connectorDefinition
+    await this.showInstances([connector])
   }
 }
