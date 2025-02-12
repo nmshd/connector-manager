@@ -5,9 +5,7 @@ import { readFile } from "fs/promises"
 import pm2 from "pm2"
 import yargs from "yargs"
 import { hideBin } from "yargs/helpers"
-import { CreateCommand } from "./commands/CreateCommand.js"
-import { InitCommand } from "./commands/InitCommand.js"
-import { ListCommand } from "./commands/ListCommand.js"
+import { CreateCommand, InitCommand, ListCommand, RestartCommand, StartCommand, StopCommand } from "./commands/index.js"
 import { getAppDir } from "./utils/getAppDir.js"
 
 await yargs(hideBin(process.argv))
@@ -22,30 +20,9 @@ await yargs(hideBin(process.argv))
       throw new Error("unimplemented")
     }
   )
-  .command(
-    "start",
-    "Start one or all connector instance(s)",
-    (argv) => argv,
-    () => {
-      throw new Error("unimplemented")
-    }
-  )
-  .command(
-    "stop",
-    "Stop one or all connector instance(s)",
-    (argv) => argv,
-    () => {
-      throw new Error("unimplemented")
-    }
-  )
-  .command(
-    "restart",
-    "Restart one or all connector instance(s)",
-    (argv) => argv,
-    () => {
-      throw new Error("unimplemented")
-    }
-  )
+  .command("start", "Start one or all connector instance(s)", StartCommand.builder, async (args) => await new StartCommand().run(args))
+  .command("stop", "Stop one or all connector instance(s)", StopCommand.builder, async (args) => await new StopCommand().run(args))
+  .command("restart", "Restart one or all connector instance(s)", RestartCommand.builder, async (args) => await new RestartCommand().run(args))
   .command(
     "update",
     "Update one or all connector instance(s)",

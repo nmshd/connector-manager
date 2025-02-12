@@ -77,27 +77,9 @@ export class ProcessManager {
     })
   }
 
-  public async stopAll() {
-    await new Promise<void>((resolve, reject) => {
-      this.#pm2.stop("all", (err: any) => {
-        if (err) reject(err)
-        else resolve()
-      })
-    })
-  }
-
   public async restart(name: string) {
     await new Promise<void>((resolve, reject) => {
       this.#pm2.restart(name, (err: any) => {
-        if (err) reject(err)
-        else resolve()
-      })
-    })
-  }
-
-  public async restartAll() {
-    await new Promise<void>((resolve, reject) => {
-      this.#pm2.restart("all", (err: any) => {
         if (err) reject(err)
         else resolve()
       })
