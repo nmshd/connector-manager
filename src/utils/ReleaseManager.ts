@@ -3,6 +3,7 @@ import chalk from "chalk"
 import { spawn } from "child_process"
 import fs from "fs"
 import { Octokit } from "octokit"
+import path from "path"
 import { Readable } from "stream"
 import { finished } from "stream/promises"
 import { ReadableStream } from "stream/web"
@@ -10,10 +11,10 @@ import { getAppDir } from "./getAppDir.js"
 
 export class ReleaseManager {
   public async provideRelease(version: string): Promise<string> {
-    const releasesDir = `${getAppDir()}/releases`
-    const connectorDir = `${releasesDir}/connector-${version}`
+    const releasesDir = path.join(getAppDir(), "releases")
+    const connectorDir = path.join(releasesDir, `connector-${version}`)
 
-    if (fs.existsSync(`${connectorDir}/dist`) && fs.existsSync(`${connectorDir}/node_modules`)) return connectorDir
+    if (fs.existsSync(path.join(connectorDir, "dist")) && fs.existsSync(path.join(connectorDir, "node_modules"))) return connectorDir
 
     const zipPath = await this.downloadConnector(releasesDir, version)
 
@@ -55,7 +56,7 @@ export class ReleaseManager {
   private async downloadConnector(zipDir: string, version: string) {
     if (!fs.existsSync(zipDir)) fs.mkdirSync(zipDir, { recursive: true })
 
-    const zipPath = `${zipDir}/connector-${version}.zip`
+    const zipPath = path.join(zipDir, `connector-${version}.zip`)
     if (fs.existsSync(zipPath)) return zipPath
 
     const release = await this.getGithubRelease(version)
@@ -74,14 +75,14 @@ export class ReleaseManager {
   }
 
   private extractConnector(connectorDir: string, zipPath: string) {
-    if (fs.existsSync(`${connectorDir}/dist`)) return
+    if (fs.existsSync(path.join(connectorDir, "dist"))) return
 
     const zip = new AdmZip(zipPath)
     zip.extractAllTo(connectorDir)
   }
 
   private async npmInstallConnector(connectorDir: string) {
-    if (fs.existsSync(`${connectorDir}/node_modules`)) return
+    if (fs.existsSync(path.join(connectorDir, "node_modules"))) return
 
     await new Promise<void>((resolve, reject) => {
       const npmInstall = spawn("npm", ["install", "--prefix", connectorDir, "--production"], { stdio: "ignore" })
