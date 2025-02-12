@@ -1,7 +1,7 @@
 import chalk from "chalk"
 import fs from "fs"
 import * as yargs from "yargs"
-import { getAppDir } from "../utils/getAppDir.js"
+import { ConnectorDefinition } from "../connector-config/Config.js"
 import { BaseCommand } from "./BaseCommand.js"
 
 export interface CreateCommandArgs {
@@ -22,48 +22,48 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
 
     console.log("Creating connector...")
 
-    this._config.connectors.push({ name: args.name, version: args.version })
+    const apiKey = "OD3fMLcBGyQ2eCpI9JdTYRozltF"
+    const port = 8080 + this._config.connectors.length - 1
+    const connectorDefinition: ConnectorDefinition = await this.createConnector(args.name, args.version, apiKey, port)
+
+    await this._processManager.start(args.name)
+
+    console.log(`Successfully created the connector ${chalk.green(args.name)}.\n`)
+
+    await this.showInstances([connectorDefinition])
+  }
+
+  private async createConnector(name: string, version: string, apiKey: string, port: number): Promise<ConnectorDefinition> {
+    if (this._config.connectors.find((c) => c.name === name)) {
+      console.error(`A connector with the name ${chalk.red(name)} already exists.`)
+      process.exit(1)
+    }
+
+    const connectorDefinition: ConnectorDefinition = { name: name, version: version }
+    this._config.connectors.push(connectorDefinition)
     await this._config.save()
 
-    const connectorsDir = `${getAppDir()}/connectors`
-    if (!fs.existsSync(connectorsDir)) fs.mkdirSync(connectorsDir, { recursive: true })
-    const configDir = `${connectorsDir}/${args.name}.json`
-
     fs.writeFileSync(
-      configDir,
+      this.getConnectorConfigFile(name),
       JSON.stringify(
         {
           database: {
             connectionString: this._config.dbConnectionString,
-            dbName: args.name,
+            dbName: name,
           },
           transportLibrary: {
             baseUrl: this._config.platformBaseUrl,
             platformClientId: this._config.platformClientId,
             platformClientSecret: this._config.platformClientSecret,
           },
-          logging: {
-            categories: {
-              default: {
-                appenders: ["console"],
-              },
-            },
-          },
-          infrastructure: {
-            httpServer: {
-              // TODO: generate random port
-              apiKey: "OD3fMLcBGyQ2eCpI9JdTYRozltF",
-              port: 8080 + this._config.connectors.length - 1,
-            },
-          },
+          logging: { categories: { default: { appenders: ["console"] } } },
+          infrastructure: { httpServer: { apiKey, port } },
         },
         null,
         2
       )
     )
 
-    await this._processManager.start(args.name)
-
-    console.log(`Successfully created the connector ${chalk.green(args.name)}.`)
+    return connectorDefinition
   }
 }

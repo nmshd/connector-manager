@@ -1,5 +1,8 @@
+import chalk from "chalk"
+import fs from "fs"
 import path from "path"
-import { Config } from "../connector-config/Config.js"
+import { table } from "table"
+import { Config, ConnectorDefinition } from "../connector-config/Config.js"
 import { getAppDir } from "../utils/getAppDir.js"
 import { ProcessManager } from "../utils/ProcessManager.js"
 import { ReleaseManager } from "../utils/ReleaseManager.js"
@@ -34,5 +37,37 @@ export abstract class BaseCommand<TArgs> {
     }
   }
 
+  protected getConnectorConfigFile(connectorName: string): string {
+    return `${this.connectorsDir}/${connectorName}.json`
+  }
+
+  private get connectorsDir(): string {
+    const connectorsDir = `${getAppDir()}/connectors`
+
+    if (!fs.existsSync(connectorsDir)) fs.mkdirSync(connectorsDir, { recursive: true })
+
+    return connectorsDir
+  }
+
   protected abstract runInternal(args: TArgs): Promise<void> | void
+
+  protected async showInstances(connectors: ConnectorDefinition[]): Promise<void> {
+    const tableEntries: string[][] = [["Name", "Version", "Status", "Port", "Api Key"]]
+    for (const connector of connectors) {
+      const status = await this._processManager.status(connector.name)
+
+      const configFile = this.getConnectorConfigFile(connector.name)
+      const config = JSON.parse(fs.readFileSync(configFile, "utf-8"))
+
+      tableEntries.push([
+        connector.name,
+        connector.version,
+        status?.pid ? chalk.green("running") : chalk.red("stopped"),
+        config.infrastructure.httpServer.port,
+        config.infrastructure.httpServer.apiKey,
+      ])
+    }
+
+    console.log(table(tableEntries))
+  }
 }
