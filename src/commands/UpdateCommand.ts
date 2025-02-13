@@ -2,14 +2,13 @@ import chalk from "chalk"
 import * as yargs from "yargs"
 import { BaseCommand } from "./BaseCommand.js"
 
-export type UpdateCommandArgs = { force: boolean; version?: string; rotateApiKey?: boolean; port?: number; start: boolean } & ({ name: string } | { all: true })
+export type UpdateCommandArgs = { version?: string; rotateApiKey?: boolean; port?: number; start: boolean } & ({ name: string } | { all: true })
 
 export class UpdateCommand extends BaseCommand<never> {
   public static builder: yargs.BuilderCallback<any, never> = (yargs: yargs.Argv) =>
     yargs
       .option("name", { type: "string" })
       .option("all", { type: "boolean" })
-      .option("force", { type: "boolean" })
       .option("version", { type: "string" })
       .option("rotate-api-key", { type: "boolean" })
       .option("start", { type: "boolean", default: true })
@@ -46,6 +45,15 @@ export class UpdateCommand extends BaseCommand<never> {
     if (!this._config.existsConnector(args.name)) {
       console.error(`A connector with the name ${chalk.red(args.name)} does not exist.`)
       process.exit(1)
+    }
+
+    if (typeof args.port !== "undefined") {
+      const connectorUsingPort = this._config.connectors.find((c) => c.config.infrastructure.httpServer.port === args.port)
+
+      if (connectorUsingPort) {
+        console.error(`Port ${chalk.red(args.port)} is already in use by the connector ${chalk.red(connectorUsingPort.name)}.`)
+        process.exit(1)
+      }
     }
 
     await this.update(args.name, args)
