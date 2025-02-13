@@ -1,4 +1,5 @@
 import chalk from "chalk"
+import { ProcessDescription } from "pm2"
 import { table } from "table"
 import { Config, ConnectorDefinition } from "../connector-config/Config.js"
 import { getAppDir } from "../utils/getAppDir.js"
@@ -40,23 +41,21 @@ export abstract class BaseCommand<TArgs> {
   protected async showInstances(connectors: ConnectorDefinition[]): Promise<void> {
     const tableEntries: (string | number)[][] = [["Name", "Version", "Status", "CPU", "Memory", "Uptime", "PID", "Port", "Api Key"]]
 
-    console.time("getConnectorInfo")
+    const statuses = await this._processManager.status(connectors.length === 1 ? connectors[0].name : "all")
 
-    const futures = connectors.map((connector) => this.getConnectorInfo(connector))
-    const entries = await Promise.all(futures)
-
-    console.timeEnd("getConnectorInfo")
+    const entries = connectors.map((connector) =>
+      this.getConnectorInfo(
+        connector,
+        statuses.find((status) => status.name === connector.name)
+      )
+    )
 
     tableEntries.push(...entries)
 
     console.log(table(tableEntries))
   }
 
-  private async getConnectorInfo(connector: ConnectorDefinition): Promise<(string | number)[]> {
-    console.time(`getConnectorStatus-pm2-${connector.name}`)
-    const status = await this._processManager.status(connector.name)
-    console.timeEnd(`getConnectorStatus-pm2-${connector.name}`)
-
+  private getConnectorInfo(connector: ConnectorDefinition, status?: ProcessDescription): (string | number)[] {
     return [
       connector.name,
       connector.version,

@@ -79,21 +79,20 @@ export class ProcessManager {
     })
   }
 
-  public async list() {
-    await new Promise<void>((resolve, reject) => {
-      this.#pm2.list((err: any) => {
-        if (err) reject(err)
-        else resolve()
-      })
-    })
-  }
-
   public async status(name: string) {
-    return await new Promise<pm2.ProcessDescription | undefined>((resolve, reject) => {
+    if (name === "all") {
+      return await new Promise<pm2.ProcessDescription[]>((resolve, reject) => {
+        this.#pm2.list((err: any, pd) => {
+          if (err) return reject(err)
+          resolve(pd)
+        })
+      })
+    }
+
+    return await new Promise<pm2.ProcessDescription[]>((resolve, reject) => {
       this.#pm2.describe(name, (err: any, pd) => {
         if (err) return reject(err)
-
-        resolve(pd[0])
+        resolve(pd)
       })
     })
   }
