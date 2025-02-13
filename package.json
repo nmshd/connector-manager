@@ -29,6 +29,7 @@
     "octokit": "^4.1.1",
     "pm2": "^5.4.3",
     "table": "^6.9.0",
+    "tail": "^2.2.6",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
@@ -36,6 +37,7 @@
     "@js-soft/license-check": "^1.0.9",
     "@types/adm-zip": "^0.5.7",
     "@types/node": "^22.13.1",
+    "@types/tail": "^2.2.3",
     "@types/yargs": "^17.0.33",
     "eslint": "^8.57.0",
     "prettier": "^3.5.0",

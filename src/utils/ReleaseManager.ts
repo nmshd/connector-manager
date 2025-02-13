@@ -18,7 +18,7 @@ export class ReleaseManager {
 
     const zipPath = await this.downloadConnector(releasesDir, version)
 
-    if (!fs.existsSync(connectorDir)) fs.mkdirSync(connectorDir, { recursive: true })
+    if (!fs.existsSync(connectorDir)) await fs.promises.mkdir(connectorDir, { recursive: true })
 
     this.extractConnector(connectorDir, zipPath)
 
@@ -54,7 +54,7 @@ export class ReleaseManager {
   }
 
   private async downloadConnector(zipDir: string, version: string) {
-    if (!fs.existsSync(zipDir)) fs.mkdirSync(zipDir, { recursive: true })
+    if (!fs.existsSync(zipDir)) await fs.promises.mkdir(zipDir, { recursive: true })
 
     const zipPath = path.join(zipDir, `connector-${version}.zip`)
     if (fs.existsSync(zipPath)) return zipPath
