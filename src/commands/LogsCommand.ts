@@ -1,5 +1,6 @@
 import chalk from "chalk"
 import fs from "fs/promises"
+import os from "os"
 import { Tail } from "tail"
 import * as yargs from "yargs"
 import { BaseCommand } from "./BaseCommand.js"
@@ -41,7 +42,7 @@ export class LogsCommand extends BaseCommand<never> {
   }
 
   private tailLogs(logFilePath: string): void {
-    const tail = new Tail(logFilePath, { fromBeginning: false, fsWatchOptions: {}, follow: true })
+    const tail = new Tail(logFilePath, { fromBeginning: false, fsWatchOptions: {}, follow: true, useWatchFile: os.platform() === "win32" })
 
     tail.on("line", (data) => {
       console.log(data)
