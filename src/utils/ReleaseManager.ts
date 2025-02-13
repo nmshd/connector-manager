@@ -28,6 +28,9 @@ export class ReleaseManager {
   }
 
   public async exists(version: string): Promise<string | undefined> {
+    const connectorDir = path.join(getAppDir(), "releases", `connector-${version}`, "dist")
+    if (fs.existsSync(connectorDir)) return
+
     const release = await this.getGithubRelease(version)
 
     if (!release) return `The release ${chalk.red(version)} does not exist.`
