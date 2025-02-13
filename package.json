@@ -1,5 +1,7 @@
 {
   "name": "@nmshd/connector-manager",
+  "description": "The enmeshed Connector Manager.",
+  "homepage": "https://enmeshed.eu",
   "repository": "github:nmshd/connector-manager",
   "license": "UNLICENSED",
   "author": "j&s-soft AG",
