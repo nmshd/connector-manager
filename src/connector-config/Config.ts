@@ -93,8 +93,8 @@ export class Config {
   public addConnector(
     version: string,
     name: string,
-    platformBaseUrl?: string,
     dbConnectionString?: string,
+    platformBaseUrl?: string,
     platformClientId?: string,
     platformClientSecret?: string
   ): ConnectorDefinition {

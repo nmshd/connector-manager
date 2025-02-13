@@ -5,6 +5,10 @@ import { BaseCommand } from "./BaseCommand.js"
 export interface CreateCommandArgs {
   name: string
   version: string
+  dbConnectionString?: string
+  baseUrl?: string
+  clientId?: string
+  clientSecret?: string
 }
 
 export class CreateCommand extends BaseCommand<CreateCommandArgs> {
@@ -12,6 +16,10 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
     yargs
       .option("name", { type: "string", demandOption: true })
       .option("version", { type: "string", demandOption: true })
+      .option("db-connection-string", { type: "string" })
+      .option("base-url", { type: "string" })
+      .option("client-id", { type: "string" })
+      .option("client-secret", { type: "string" })
       .check((argv) => {
         if (argv.name === "all") return "The name 'all' is reserved."
         return true
@@ -31,7 +39,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
 
     console.log("Creating connector...")
 
-    const connector = this._config.addConnector(args.version, args.name)
+    const connector = this._config.addConnector(args.version, args.name, args.dbConnectionString, args.baseUrl, args.clientId, args.clientSecret)
     await this._config.save()
 
     await this._processManager.start(args.name)
