@@ -7,8 +7,6 @@ export class ListCommand extends BaseCommand<never> {
   protected async runInternal(): Promise<void> {
     const connectors = this._config.connectors
 
-    console.time("showInstances")
     await this.showInstances(connectors)
-    console.timeEnd("showInstances")
   }
 }
