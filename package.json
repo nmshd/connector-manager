@@ -2,7 +2,7 @@
   "name": "@nmshd/connector-manager",
   "repository": "github:nmshd/connector-manager",
   "license": "UNLICENSED",
-  "author": "j&s-soft GmbH",
+  "author": "j&s-soft AG",
   "type": "module",
   "main": "index.js",
   "bin": {
