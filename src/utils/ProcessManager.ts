@@ -1,6 +1,6 @@
 import path from "path"
 import pm2 from "pm2"
-import { Config } from "../connector-config/Config.js"
+import { Config } from "./Config.js"
 import { ReleaseManager } from "./ReleaseManager.js"
 
 export class ProcessManager {

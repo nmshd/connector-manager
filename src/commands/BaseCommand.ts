@@ -1,7 +1,7 @@
 import chalk from "chalk"
 import { ProcessDescription } from "pm2"
 import { table } from "table"
-import { Config, ConnectorDefinition } from "../connector-config/Config.js"
+import { Config, ConnectorDefinition } from "../utils/Config.js"
 import { getAppDir } from "../utils/getAppDir.js"
 import { ProcessManager } from "../utils/ProcessManager.js"
 import { ReleaseManager } from "../utils/ReleaseManager.js"
