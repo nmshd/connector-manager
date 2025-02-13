@@ -21,7 +21,7 @@ export class LogsCommand extends BaseCommand<never> {
     }
 
     const connector = this._config.getConnector(args.name)
-    const lastLines = this.readLastNLines(connector!.logFilePath, args.lines)
+    const lastLines = await this.readLastNLines(connector!.logFilePath, args.lines)
     console.log(lastLines)
 
     if (!args.tail) return
