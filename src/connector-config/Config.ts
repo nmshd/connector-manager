@@ -90,16 +90,24 @@ export class Config {
     }
   }
 
-  public addConnector(version: string, name: string, port: number): ConnectorDefinition {
+  public addConnector(
+    version: string,
+    name: string,
+    port: number,
+    platformBaseUrl?: string,
+    dbConnectionString?: string,
+    platformClientId?: string,
+    platformClientSecret?: string
+  ): ConnectorDefinition {
     const connector = new ConnectorDefinition(this.appDir, version, name, {
       database: {
-        connectionString: this.dbConnectionString,
+        connectionString: dbConnectionString ?? this.dbConnectionString,
         dbName: name,
       },
       transportLibrary: {
-        baseUrl: this.platformBaseUrl,
-        platformClientId: this.platformClientId,
-        platformClientSecret: this.platformClientSecret,
+        baseUrl: platformBaseUrl ?? this.platformBaseUrl,
+        platformClientId: platformClientId ?? this.platformClientId,
+        platformClientSecret: platformClientSecret ?? this.platformClientSecret,
       },
       logging: { categories: { default: { appenders: ["console"] } } },
       infrastructure: { httpServer: { apiKey: "", port } },
