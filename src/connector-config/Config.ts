@@ -22,9 +22,10 @@ export class Config {
     return this.#connectors
   }
 
-  private constructor(private readonly appDir: string) {}
+  public constructor(private readonly appDir: string) {}
 
   public static async load(appDir: string): Promise<Config> {
+    console.time("Config.load")
     const config = new Config(appDir)
 
     if (fs.existsSync(config.configPath)) {
@@ -32,6 +33,7 @@ export class Config {
       const fileContentAsJson = JSON.parse(fileContentAsString)
       await config.fillFromJson(fileContentAsJson)
     }
+    console.timeEnd("Config.load")
 
     return config
   }
