@@ -23,19 +23,21 @@
     "watch": "node --watch --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' src/index.ts"
   },
   "dependencies": {
+    "@nmshd/connector-sdk": "^6.14.3",
     "adm-zip": "^0.5.16",
     "chalk": "^5.4.1",
     "octokit": "^4.1.1",
     "pm2": "^5.4.3",
     "table": "^6.9.0",
-    "yargs": "^17.7.2",
-    "zx": "^8.3.2"
+    "tail": "^2.2.6",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@js-soft/eslint-config-ts": "^1.6.13",
     "@js-soft/license-check": "^1.0.9",
     "@types/adm-zip": "^0.5.7",
     "@types/node": "^22.13.1",
+    "@types/tail": "^2.2.3",
     "@types/yargs": "^17.0.33",
     "eslint": "^8.57.0",
     "prettier": "^3.5.0",

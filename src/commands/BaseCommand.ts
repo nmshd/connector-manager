@@ -1,3 +1,4 @@
+import { ConnectorClient } from "@nmshd/connector-sdk"
 import chalk from "chalk"
 import { table } from "table"
 import { Config, ConnectorDefinition } from "../connector-config/Config.js"
@@ -38,20 +39,28 @@ export abstract class BaseCommand<TArgs> {
   protected abstract runInternal(args: TArgs): Promise<void> | void
 
   protected async showInstances(connectors: ConnectorDefinition[]): Promise<void> {
-    const tableEntries: (string | number)[][] = [["Name", "Version", "Status", "cpu", "mem", "Uptime", "PID", "Port", "Api Key"]]
+    const tableEntries: (string | number)[][] = [["Name", "Version", "Status", "CPU", "Memory", "Uptime", "PID", "Port", "Api Key", "Health"]]
     for (const connector of connectors) {
       const status = await this._processManager.status(connector.name)
+
+      const sdk = ConnectorClient.create({
+        baseUrl: `http://localhost:${connector.config.infrastructure.httpServer.port}`,
+        apiKey: connector.config.infrastructure.httpServer.apiKey,
+      })
+      const healthResponse = await sdk.monitoring.getHealth()
+      const health = healthResponse.isHealthy ? chalk.green("Healthy") : chalk.red("Unhealthy")
 
       tableEntries.push([
         connector.name,
         connector.version,
         status?.pid ? chalk.green("running") : chalk.red("stopped"),
-        status?.monit?.cpu ?? "",
-        status?.monit?.memory ?? "",
-        formatDuration(Date.now() - (status?.pm2_env?.pm_uptime ?? 0)),
+        typeof status?.monit?.cpu !== "undefined" ? `${status.monit.cpu}%` : "",
+        typeof status?.monit?.memory !== "undefined" ? `${new Intl.NumberFormat("en", { maximumFractionDigits: 2 }).format(status.monit.memory / 1000000)}MB` : "",
+        status?.pm2_env?.pm_uptime ? formatDuration(Date.now() - status.pm2_env.pm_uptime) : "",
         status?.pid ?? "",
         connector.config.infrastructure.httpServer.port.toString(),
         connector.config.infrastructure.httpServer.apiKey,
+        health,
       ])
     }
 
@@ -67,8 +76,9 @@ const formatDuration = (ms: number) => {
     m: Math.floor(ms / 60000) % 60,
     s: Math.floor(ms / 1000) % 60,
   }
-  return Object.entries(time)
-    .filter((val) => val[1] !== 0)
-    .map(([key, val]) => `${val}${key}`)
-    .join(", ")
+
+  if (time.d > 0) return `${time.d}d${time.h}h`
+  if (time.h > 0) return `${time.h}h${time.m}m`
+  if (time.m > 0) return `${time.m}m${time.s}s`
+  return `${time.s}s`
 }

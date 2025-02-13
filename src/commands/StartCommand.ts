@@ -18,8 +18,12 @@ export class StartCommand extends BaseCommand<never> {
   protected async runInternal(args: StartCommandArgs): Promise<void> {
     if ("all" in args) {
       console.log("Starting all connectors...")
+      console.log()
 
-      await this._processManager.startAll()
+      for (const connector of this._config.connectors) {
+        await this.start(connector.name)
+      }
+
       console.log("All connectors started.")
 
       return
@@ -30,8 +34,15 @@ export class StartCommand extends BaseCommand<never> {
       process.exit(1)
     }
 
-    console.log(`Starting connector ${chalk.green(args.name)}...`)
-    await this._processManager.start(args.name)
-    console.log(`Connector ${chalk.green(args.name)} started.`)
+    await this.start(args.name)
+  }
+
+  private async start(name: string) {
+    console.log(`Starting connector ${chalk.green(name)}...`)
+
+    await this._processManager.start(name)
+
+    console.log(`Connector ${chalk.green(name)} started.`)
+    console.log()
   }
 }

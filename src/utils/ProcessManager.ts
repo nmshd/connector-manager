@@ -1,3 +1,4 @@
+import path from "path"
 import pm2 from "pm2"
 import { Config } from "../connector-config/Config.js"
 import { ReleaseManager } from "./ReleaseManager.js"
@@ -46,7 +47,7 @@ export class ProcessManager {
       this.#pm2.start(
         {
           name: name,
-          script: `${connectorPath}/dist/index.js`,
+          script: path.join(connectorPath, "dist", "index.js"),
           args: ["start", "-c", connectorFromConfig.configFilePath],
           merge_logs: true,
           output: connectorFromConfig.logFilePath,
@@ -57,21 +58,6 @@ export class ProcessManager {
           else resolve()
         }
       )
-    })
-  }
-
-  public async startAll() {
-    for (const connector of this.config.connectors) {
-      await this.start(connector.name)
-    }
-  }
-
-  public async stop(name: string) {
-    await new Promise<void>((resolve, reject) => {
-      this.#pm2.stop(name, (err: any) => {
-        if (err) reject(err)
-        else resolve()
-      })
     })
   }
 
