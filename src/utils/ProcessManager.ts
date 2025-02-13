@@ -61,15 +61,6 @@ export class ProcessManager {
     })
   }
 
-  public async stop(name: string) {
-    await new Promise<void>((resolve, reject) => {
-      this.#pm2.stop(name, (err: any) => {
-        if (err) reject(err)
-        else resolve()
-      })
-    })
-  }
-
   public async delete(name: string) {
     if (name === "all") throw new Error("Cannot delete all connectors")
 
