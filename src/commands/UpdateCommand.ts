@@ -39,6 +39,8 @@ export class UpdateCommand extends BaseCommand<never> {
         await this.update(connector.name, args)
       }
 
+      await this.showInstances(this._config.connectors)
+
       return
     }
 
@@ -57,6 +59,9 @@ export class UpdateCommand extends BaseCommand<never> {
     }
 
     await this.update(args.name, args)
+
+    const instance = this._config.getConnector(args.name)
+    await this.showInstances([instance!])
   }
 
   private async update(name: string, args: UpdateCommandArgs) {
