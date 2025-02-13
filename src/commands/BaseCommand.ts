@@ -1,4 +1,3 @@
-import { ConnectorClient } from "@nmshd/connector-sdk"
 import chalk from "chalk"
 import { table } from "table"
 import { Config, ConnectorDefinition } from "../connector-config/Config.js"
@@ -39,7 +38,7 @@ export abstract class BaseCommand<TArgs> {
   protected abstract runInternal(args: TArgs): Promise<void> | void
 
   protected async showInstances(connectors: ConnectorDefinition[]): Promise<void> {
-    const tableEntries: (string | number)[][] = [["Name", "Version", "Status", "CPU", "Memory", "Uptime", "PID", "Port", "Api Key", "Health"]]
+    const tableEntries: (string | number)[][] = [["Name", "Version", "Status", "CPU", "Memory", "Uptime", "PID", "Port", "Api Key"]]
 
     console.time("getConnectorInfo")
 
@@ -58,10 +57,6 @@ export abstract class BaseCommand<TArgs> {
     const status = await this._processManager.status(connector.name)
     console.timeEnd(`getConnectorStatus-pm2-${connector.name}`)
 
-    console.time(`getConnectorStatus-http-${connector.name}`)
-    const health = status?.pid ? await this.getConnectorHealth(connector) : "n/a"
-    console.timeEnd(`getConnectorStatus-http-${connector.name}`)
-
     return [
       connector.name,
       connector.version,
@@ -72,22 +67,7 @@ export abstract class BaseCommand<TArgs> {
       status?.pid ?? "",
       connector.config.infrastructure.httpServer.port.toString(),
       connector.config.infrastructure.httpServer.apiKey,
-      health,
     ]
-  }
-
-  private async getConnectorHealth(connector: ConnectorDefinition): Promise<string> {
-    try {
-      const sdk = ConnectorClient.create({
-        baseUrl: `http://localhost:${connector.config.infrastructure.httpServer.port}`,
-        apiKey: connector.config.infrastructure.httpServer.apiKey,
-      })
-
-      const healthResponse = await sdk.monitoring.getHealth()
-      return healthResponse.isHealthy ? chalk.green("Healthy") : chalk.red("Unhealthy")
-    } catch (_) {
-      return chalk.red("Unreachable")
-    }
   }
 }
 
