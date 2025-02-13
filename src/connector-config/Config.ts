@@ -1,3 +1,4 @@
+import crypto from "crypto"
 import fs from "fs"
 import path from "path"
 
@@ -130,6 +131,8 @@ export class Config {
 }
 
 export class ConnectorDefinition {
+  private static readonly API_KEY_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-="
+
   public constructor(
     private readonly appDir: string,
     public version: string,
@@ -153,8 +156,13 @@ export class ConnectorDefinition {
   }
 
   public rotateApiKey(): void {
-    // TODO: better random generation
-    this.config.infrastructure.httpServer.apiKey = Math.random().toString(36).substring(2)
+    const length = Math.floor(Math.random() * 11) + 20 // Random length between 20 and 30
+    let apiKey = ""
+    const randomValues = crypto.randomBytes(length)
+    for (let i = 0; i < length; i++) {
+      apiKey += ConnectorDefinition.API_KEY_CHARSET[randomValues[i] % ConnectorDefinition.API_KEY_CHARSET.length]
+    }
+    this.config.infrastructure.httpServer.apiKey = apiKey
   }
 
   public toJson(): any {
