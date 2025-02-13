@@ -31,8 +31,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
 
     console.log("Creating connector...")
 
-    const port = 8080 + this._config.connectors.length
-    const connector = this._config.addConnector(args.version, args.name, port)
+    const connector = this._config.addConnector(args.version, args.name)
     await this._config.save()
 
     await this._processManager.start(args.name)
