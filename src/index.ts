@@ -34,6 +34,5 @@ await yargs(hideBin(process.argv))
   .recommendCommands()
   .strict()
   .version(false)
-  .scriptName("connector-manager")
   .help()
   .alias("help", "h").argv
