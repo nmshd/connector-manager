@@ -40,31 +40,54 @@ export abstract class BaseCommand<TArgs> {
 
   protected async showInstances(connectors: ConnectorDefinition[]): Promise<void> {
     const tableEntries: (string | number)[][] = [["Name", "Version", "Status", "CPU", "Memory", "Uptime", "PID", "Port", "Api Key", "Health"]]
-    for (const connector of connectors) {
-      const status = await this._processManager.status(connector.name)
 
+    console.time("getConnectorInfo")
+
+    const futures = connectors.map((connector) => this.getConnectorInfo(connector))
+    const entries = await Promise.all(futures)
+
+    console.timeEnd("getConnectorInfo")
+
+    tableEntries.push(...entries)
+
+    console.log(table(tableEntries))
+  }
+
+  private async getConnectorInfo(connector: ConnectorDefinition): Promise<(string | number)[]> {
+    console.time(`getConnectorStatus-pm2-${connector.name}`)
+    const status = await this._processManager.status(connector.name)
+    console.timeEnd(`getConnectorStatus-pm2-${connector.name}`)
+
+    console.time(`getConnectorStatus-http-${connector.name}`)
+    const health = status?.pid ? await this.getConnectorHealth(connector) : "n/a"
+    console.timeEnd(`getConnectorStatus-http-${connector.name}`)
+
+    return [
+      connector.name,
+      connector.version,
+      status?.pid ? chalk.green("running") : chalk.red("stopped"),
+      typeof status?.monit?.cpu !== "undefined" ? `${status.monit.cpu}%` : "",
+      typeof status?.monit?.memory !== "undefined" ? `${new Intl.NumberFormat("en", { maximumFractionDigits: 2 }).format(status.monit.memory / 1000000)}MB` : "",
+      status?.pm2_env?.pm_uptime ? formatDuration(Date.now() - status.pm2_env.pm_uptime) : "",
+      status?.pid ?? "",
+      connector.config.infrastructure.httpServer.port.toString(),
+      connector.config.infrastructure.httpServer.apiKey,
+      health,
+    ]
+  }
+
+  private async getConnectorHealth(connector: ConnectorDefinition): Promise<string> {
+    try {
       const sdk = ConnectorClient.create({
         baseUrl: `http://localhost:${connector.config.infrastructure.httpServer.port}`,
         apiKey: connector.config.infrastructure.httpServer.apiKey,
       })
+
       const healthResponse = await sdk.monitoring.getHealth()
-      const health = healthResponse.isHealthy ? chalk.green("Healthy") : chalk.red("Unhealthy")
-
-      tableEntries.push([
-        connector.name,
-        connector.version,
-        status?.pid ? chalk.green("running") : chalk.red("stopped"),
-        typeof status?.monit?.cpu !== "undefined" ? `${status.monit.cpu}%` : "",
-        typeof status?.monit?.memory !== "undefined" ? `${new Intl.NumberFormat("en", { maximumFractionDigits: 2 }).format(status.monit.memory / 1000000)}MB` : "",
-        status?.pm2_env?.pm_uptime ? formatDuration(Date.now() - status.pm2_env.pm_uptime) : "",
-        status?.pid ?? "",
-        connector.config.infrastructure.httpServer.port.toString(),
-        connector.config.infrastructure.httpServer.apiKey,
-        health,
-      ])
+      return healthResponse.isHealthy ? chalk.green("Healthy") : chalk.red("Unhealthy")
+    } catch (_) {
+      return chalk.red("Unreachable")
     }
-
-    console.log(table(tableEntries))
   }
 }
 
