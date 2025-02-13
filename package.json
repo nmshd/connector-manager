@@ -1,7 +1,7 @@
 {
   "name": "@nmshd/connector-manager",
   "repository": "github:nmshd/connector-manager",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "author": "j&s-soft GmbH",
   "type": "module",
   "main": "index.js",
