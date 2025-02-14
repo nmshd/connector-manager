@@ -67,12 +67,8 @@ export class Config {
 
     await Promise.all(
       this.deletedConnectors.map(async (c) => {
-        if (fs.existsSync(c.configFilePath)) {
-          await fs.promises.unlink(c.configFilePath)
-        }
-
-        if (fs.existsSync(c.logFilePath)) {
-          await fs.promises.unlink(c.logFilePath)
+        if (fs.existsSync(c.directory)) {
+          await fs.promises.rm(c.directory, { recursive: true, force: true })
         }
       })
     )
@@ -156,12 +152,16 @@ export class ConnectorDefinition {
     public config: ConnectorConfig
   ) {}
 
+  public get directory(): string {
+    return path.join(this.appDir, "connectors", this.name)
+  }
+
   public get configFilePath(): string {
-    return ConnectorDefinition.buildFilePath(this.appDir, this.name, "config.json")
+    return path.join(this.directory, "config.json")
   }
 
   public get logFilePath(): string {
-    return ConnectorDefinition.buildFilePath(this.appDir, this.name, "logs.txt")
+    return path.join(this.directory, "logs.txt")
   }
 
   public static async load(json: any, appDir: string): Promise<ConnectorDefinition> {
