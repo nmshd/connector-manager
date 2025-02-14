@@ -1,4 +1,5 @@
 import chalk from "chalk"
+import prompts from "prompts"
 import * as yargs from "yargs"
 import { BaseCommand } from "./BaseCommand.js"
 
@@ -17,8 +18,14 @@ export class DeleteCommand extends BaseCommand<never> {
     }
 
     if (!args.yes) {
-      console.log(chalk.yellow("This will stop and delete the connector. Are you sure you want to continue? Re-run the command with the --yes flag to confirm."))
-      process.exit(0)
+      const answer = await prompts({
+        name: "confirm",
+        type: "confirm",
+        message: `Are you sure you want to delete the connector ${chalk.red(args.name)}?`,
+        initial: false,
+      })
+
+      if (!answer.confirm) process.exit(0)
     }
 
     await this._processManager.delete(args.name)
