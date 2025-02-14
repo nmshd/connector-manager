@@ -97,15 +97,20 @@ export class Config {
       throw new Error(`A connector with the name ${name} already exists.`)
     }
 
+    dbConnectionString = dbConnectionString === "" || dbConnectionString === undefined ? this.dbConnectionString : dbConnectionString
+    platformBaseUrl = platformBaseUrl === "" || platformBaseUrl === undefined ? this.platformBaseUrl : platformBaseUrl
+    platformClientId = platformClientId === "" || platformClientId === undefined ? this.platformClientId : platformClientId
+    platformClientSecret = platformClientSecret === "" || platformClientSecret === undefined ? this.platformClientSecret : platformClientSecret
+
     const connector = new ConnectorDefinition(this.appDir, version, name, {
       database: {
-        connectionString: dbConnectionString ?? this.dbConnectionString,
+        connectionString: dbConnectionString,
         dbName: name,
       },
       transportLibrary: {
-        baseUrl: platformBaseUrl ?? this.platformBaseUrl,
-        platformClientId: platformClientId ?? this.platformClientId,
-        platformClientSecret: platformClientSecret ?? this.platformClientSecret,
+        baseUrl: platformBaseUrl,
+        platformClientId: platformClientId,
+        platformClientSecret: platformClientSecret,
       },
       logging: { categories: { default: { appenders: ["console"] } } },
       infrastructure: { httpServer: { apiKey: "", port: this.findFreePort() } },
