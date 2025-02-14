@@ -151,8 +151,8 @@ export class ConnectorDefinition {
 
   public constructor(
     private readonly appDir: string,
+    public readonly name: string,
     public version: string,
-    public name: string,
     public config: ConnectorConfig
   ) {}
 
