@@ -9,7 +9,7 @@ The tool is controlled via the command line.
 In order to use this tool, the following prerequisites must be met:
 
 - The latest version of [Node.js](https://nodejs.org/en/download) must be installed on the machine.
-- There must be an existing MongoDB instance, which can be used by the Connectors. You can download the community edition of MongoDB from [here]().
+- There must be an existing MongoDB instance, which can be used by the Connectors. You can download the community edition of MongoDB from [here](https://www.mongodb.com/try/download/community).
 
 ## Installation
 
