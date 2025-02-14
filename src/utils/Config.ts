@@ -1,4 +1,3 @@
-import crypto from "crypto"
 import fs from "fs"
 import path from "path"
 
@@ -147,8 +146,6 @@ export class Config {
 }
 
 export class ConnectorDefinition {
-  private static readonly API_KEY_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-="
-
   public constructor(
     private readonly appDir: string,
     public readonly name: string,
@@ -176,13 +173,7 @@ export class ConnectorDefinition {
   }
 
   public rotateApiKey(): void {
-    const length = Math.floor(Math.random() * 11) + 20 // Random length between 20 and 30
-    let apiKey = ""
-    const randomValues = crypto.randomBytes(length)
-    for (let i = 0; i < length; i++) {
-      apiKey += ConnectorDefinition.API_KEY_CHARSET[randomValues[i] % ConnectorDefinition.API_KEY_CHARSET.length]
-    }
-    this.config.infrastructure.httpServer.apiKey = apiKey
+    this.config.infrastructure.httpServer.apiKey = generateRandomString()
   }
 
   public toJson(): any {
@@ -209,4 +200,54 @@ export interface ConnectorConfig {
   }
   logging: any
   infrastructure: { httpServer: { apiKey: string; port: number } }
+}
+
+export function generateRandomString() {
+  const minLength = 30
+  const maxLength = 40
+
+  const pools = [
+    {
+      chars: ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"],
+      minimumNumberOfOccurrences: 2,
+    },
+
+    {
+      chars: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"],
+      minimumNumberOfOccurrences: 2,
+    },
+    {
+      chars: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+      minimumNumberOfOccurrences: 2,
+    },
+    {
+      chars: ["!", '"', "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|", "}", "~", "]"],
+      minimumNumberOfOccurrences: 1,
+    },
+  ]
+  const allChars = pools.flatMap((pool) => pool.chars)
+  let password = ""
+
+  while (password.length < minLength) {
+    const pool = pools[Math.floor(Math.random() * pools.length)]
+    password += pool.chars[Math.floor(Math.random() * pool.chars.length)]
+  }
+
+  while (password.length < maxLength) {
+    password += allChars[Math.floor(Math.random() * allChars.length)]
+  }
+
+  password = password
+    .split("")
+    .sort(() => 0.5 - Math.random())
+    .join("")
+
+  pools.forEach((pool) => {
+    const occurrences = password.split("").filter((char) => pool.chars.includes(char)).length
+    if (occurrences < pool.minimumNumberOfOccurrences) {
+      throw new Error("Password does not meet the pool requirements")
+    }
+  })
+
+  return password
 }
