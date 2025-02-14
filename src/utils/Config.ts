@@ -102,7 +102,7 @@ export class Config {
     platformClientId = platformClientId === "" || platformClientId === undefined ? this.platformClientId : platformClientId
     platformClientSecret = platformClientSecret === "" || platformClientSecret === undefined ? this.platformClientSecret : platformClientSecret
 
-    const connector = new ConnectorDefinition(this.appDir, version, name, {
+    const connector = new ConnectorDefinition(this.appDir, name, version, {
       database: {
         connectionString: dbConnectionString,
         dbName: name,
@@ -174,7 +174,7 @@ export class ConnectorDefinition {
     const configPath = this.buildFilePath(appDir, json.name, "config.json")
     const configContent = await fs.promises.readFile(configPath)
     const configJson = JSON.parse(configContent.toString())
-    return new ConnectorDefinition(appDir, json.version, json.name, configJson)
+    return new ConnectorDefinition(appDir, json.name, json.version, configJson)
   }
 
   public rotateApiKey(): void {
