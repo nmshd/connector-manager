@@ -1,3 +1,4 @@
+import { ConnectorClient } from "@nmshd/connector-sdk"
 import fs from "fs"
 import path from "path"
 
@@ -91,7 +92,8 @@ export class Config {
     dbConnectionString?: string,
     platformBaseUrl?: string,
     platformClientId?: string,
-    platformClientSecret?: string
+    platformClientSecret?: string,
+    port?: number
   ): ConnectorDefinition {
     if (this.existsConnector(name)) {
       throw new Error(`A connector with the name ${name} already exists.`)
@@ -101,6 +103,7 @@ export class Config {
     platformBaseUrl = platformBaseUrl === "" || platformBaseUrl === undefined ? this.platformBaseUrl : platformBaseUrl
     platformClientId = platformClientId === "" || platformClientId === undefined ? this.platformClientId : platformClientId
     platformClientSecret = platformClientSecret === "" || platformClientSecret === undefined ? this.platformClientSecret : platformClientSecret
+    port = port === undefined || port === 0 ? this.findFreePort() : port
 
     const connector = new ConnectorDefinition(this.appDir, name, version, {
       database: {
@@ -113,7 +116,7 @@ export class Config {
         platformClientSecret: platformClientSecret,
       },
       logging: { categories: { default: { appenders: ["console"] } } },
-      infrastructure: { httpServer: { apiKey: "", port: this.findFreePort() } },
+      infrastructure: { httpServer: { apiKey: "", port: port } },
     })
 
     connector.rotateApiKey()
@@ -122,7 +125,7 @@ export class Config {
     return connector
   }
 
-  private findFreePort(): number {
+  public findFreePort(): number {
     let port = 8080
 
     // eslint-disable-next-line no-loop-func
@@ -168,6 +171,13 @@ export class ConnectorDefinition {
 
   public get logFilePath(): string {
     return path.join(this.directory, "logs.txt")
+  }
+
+  public get sdk(): ConnectorClient {
+    return ConnectorClient.create({
+      baseUrl: `http://localhost:${this.config.infrastructure.httpServer.port}`,
+      apiKey: this.config.infrastructure.httpServer.apiKey,
+    })
   }
 
   public static async load(json: any, appDir: string): Promise<ConnectorDefinition> {

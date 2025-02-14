@@ -1,8 +1,9 @@
 import chalk from "chalk"
 import * as yargs from "yargs"
+import { setDisplayName } from "../utils/connectorUtils.js"
 import { BaseCommand } from "./BaseCommand.js"
 
-export type UpdateCommandArgs = { version?: string; rotateApiKey?: boolean; port?: number; start: boolean } & ({ name: string } | { all: true })
+export type UpdateCommandArgs = { version?: string; rotateApiKey?: boolean; port?: number; start: boolean; displayName?: string } & ({ name: string } | { all: true })
 
 export class UpdateCommand extends BaseCommand<never> {
   public static builder: yargs.BuilderCallback<any, never> = (yargs: yargs.Argv) =>
@@ -13,14 +14,22 @@ export class UpdateCommand extends BaseCommand<never> {
       .option("rotate-api-key", { type: "boolean", description: "Generate a new API key for the connector(s)." })
       .option("start", { type: "boolean", default: true, description: "Start the connector(s) after updating." })
       .option("port", { type: "number", description: "The new port the connector should listen on. Cannot be used together with --all." })
+      .option("display-name", { type: "string", description: "The new display name (attribute) of the connector." })
       .conflicts("name", "all")
       .conflicts("port", "all")
+      .conflicts("display-name", "all")
       .check((argv) => {
         if (!("name" in argv || "all" in argv)) return "Either --name or --all must be provided."
 
-        if (typeof argv.version === "undefined" && !argv.rotateApiKey && typeof argv.port === "undefined") {
-          return "At least one of --version, --rotateApiKey or --port must be provided."
+        if (typeof argv.version === "undefined" && !argv.rotateApiKey && typeof argv.port === "undefined" && typeof argv["display-name"] === "undefined") {
+          return "At least one of --version, --rotateApiKey, --display-name or --port must be provided."
         }
+
+        if (typeof argv["display-name"] !== "undefined" && !argv.start) {
+          return "The --display-name option requires the --start option, because setting a display name needs the connector to be online."
+        }
+
+        if (argv["display-name"]?.trim().length === 0) return "The display name cannot be empty."
 
         return true
       })
@@ -83,6 +92,8 @@ export class UpdateCommand extends BaseCommand<never> {
     }
 
     await this._processManager.start(name)
+
+    if (typeof args.displayName !== "undefined") await setDisplayName(connector, args.displayName.trim())
 
     console.log(`Connector ${chalk.green(name)} updated and (re-)started.`)
     console.log()

@@ -96,4 +96,10 @@ export class ProcessManager {
       })
     })
   }
+
+  public async isRunning(name: string) {
+    const status = await this.status(name)
+
+    return status.length > 0
+  }
 }
