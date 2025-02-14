@@ -1,6 +1,6 @@
 import chalk from "chalk"
 import * as yargs from "yargs"
-import { ConnectorDefinition } from "../utils/Config.js"
+import { setDisplayName } from "../utils/connectorUtils.js"
 import { BaseCommand } from "./BaseCommand.js"
 
 export interface CreateCommandArgs {
@@ -78,44 +78,8 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
 
     console.log(`Successfully created the connector ${chalk.green(name)}.\n`)
 
-    if (typeof args.displayName !== "undefined") await this.setDisplayName(connector, args.displayName)
+    if (typeof args.displayName !== "undefined") await setDisplayName(connector, args.displayName.trim())
 
     await this.showInstances([connector])
-  }
-
-  private async setDisplayName(connector: ConnectorDefinition, displayName: string) {
-    const isHealthy = await this.waitForConnectorToBeHealthy(connector)
-    if (!isHealthy) {
-      console.error(`The connector ${chalk.red(connector.name)} did not become healthy. Could not set display name.`)
-      return
-    }
-
-    const result = await connector.sdk.attributes.createRepositoryAttribute({ content: { value: { "@type": "DisplayName", value: displayName } } })
-    if (result.isError) {
-      console.error(`Could not set display name: ${result.error.code}.`)
-      return
-    }
-  }
-
-  private async waitForConnectorToBeHealthy(connector: ConnectorDefinition): Promise<boolean> {
-    console.log(`Waiting for connector ${chalk.green(connector.name)} to be healthy...`)
-
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    let iterations = 0
-
-    while (iterations < 500) {
-      try {
-        const response = await connector.sdk.monitoring.getHealth()
-        if (response.isHealthy) return true
-      } catch {
-        // Ignore
-      }
-
-      iterations++
-      await new Promise((resolve) => setTimeout(resolve, 500))
-    }
-
-    return false
   }
 }
