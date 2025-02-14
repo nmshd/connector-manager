@@ -79,7 +79,7 @@ export class ProcessManager {
     })
   }
 
-  public async status(name: string) {
+  public async status(name: string): Promise<pm2.ProcessDescription[]> {
     if (name === "all") {
       return await new Promise<pm2.ProcessDescription[]>((resolve, reject) => {
         this.#pm2.list((err: any, pd) => {
