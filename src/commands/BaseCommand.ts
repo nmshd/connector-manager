@@ -1,3 +1,4 @@
+import { DisplayNameJSON } from "@nmshd/content"
 import chalk from "chalk"
 import { ProcessDescription } from "pm2"
 import { table } from "table"
@@ -39,24 +40,26 @@ export abstract class BaseCommand<TArgs> {
   protected abstract runInternal(args: TArgs): Promise<void> | void
 
   protected async showInstances(connectors: ConnectorDefinition[]): Promise<void> {
-    const tableEntries: (string | number)[][] = [["Name", "Version", "Status", "CPU", "Memory", "Uptime", "PID", "Port", "Api Key"]]
+    const tableEntries: (string | number)[][] = [["Name", "Version", "Status", "CPU", "Memory", "Uptime", "PID", "Port", "Api Key", "Display Name(s)"]]
 
     const statuses = await this._processManager.status(connectors.length === 1 ? connectors[0].name : "all")
 
-    const entries = connectors.map((connector) =>
+    const promises = connectors.map((connector) =>
       this.getConnectorInfo(
         connector,
         statuses.find((status) => status.name === connector.name)
       )
     )
 
+    const entries = await Promise.all(promises)
+
     tableEntries.push(...entries)
 
     console.log(table(tableEntries))
   }
 
-  private getConnectorInfo(connector: ConnectorDefinition, status?: ProcessDescription): (string | number)[] {
-    return [
+  private async getConnectorInfo(connector: ConnectorDefinition, status: ProcessDescription | undefined): Promise<(string | number)[]> {
+    const connectorInfo = [
       connector.name,
       connector.version,
       status?.pid ? chalk.green("running") : chalk.red("stopped"),
@@ -67,6 +70,22 @@ export abstract class BaseCommand<TArgs> {
       connector.config.infrastructure.httpServer.port.toString(),
       connector.config.infrastructure.httpServer.apiKey,
     ]
+
+    if (!status?.pid) return connectorInfo
+
+    try {
+      const result = await connector.sdk.attributes.getOwnRepositoryAttributes({ "content.value.@type": "DisplayName", onlyLatestVersions: true })
+      if (result.isError) {
+        connectorInfo.push(chalk.red("Error"))
+      } else {
+        const displayNames = result.result.map((attribute) => (attribute.content.value as DisplayNameJSON).value)
+        connectorInfo.push(displayNames.join(", "))
+      }
+    } catch (_) {
+      connectorInfo.push(chalk.red("Error"))
+    }
+
+    return connectorInfo
   }
 }
 
