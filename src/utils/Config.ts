@@ -93,9 +93,8 @@ export class Config {
   public addConnector(
     version: string,
     name: string,
-    port: number,
-    platformBaseUrl?: string,
     dbConnectionString?: string,
+    platformBaseUrl?: string,
     platformClientId?: string,
     platformClientSecret?: string
   ): ConnectorDefinition {
@@ -110,13 +109,22 @@ export class Config {
         platformClientSecret: platformClientSecret ?? this.platformClientSecret,
       },
       logging: { categories: { default: { appenders: ["console"] } } },
-      infrastructure: { httpServer: { apiKey: "", port } },
+      infrastructure: { httpServer: { apiKey: "", port: this.findFreePort() } },
     })
 
     connector.rotateApiKey()
 
     this.#connectors.push(connector)
     return connector
+  }
+
+  private findFreePort(): number {
+    let port = 8080
+
+    // eslint-disable-next-line no-loop-func
+    while (this.#connectors.some((c) => c.config.infrastructure.httpServer.port === port)) port++
+
+    return port
   }
 
   public deleteConnector(name: string): void {
