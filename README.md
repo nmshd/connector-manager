@@ -1,4 +1,4 @@
-# Connector Management
+# Connector Manager
 
 The purpose of this tool is to manage multiple enmeshed Connector instances on a single machine. It starts a separate Node.js process for each Connector. Each of the Node.js processes opens a new port, under which the Connector's REST API is available.
 
