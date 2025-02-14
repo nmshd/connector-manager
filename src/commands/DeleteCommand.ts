@@ -8,7 +8,11 @@ export interface DeleteCommandArgs {
 }
 
 export class DeleteCommand extends BaseCommand<never> {
-  public static builder: yargs.BuilderCallback<any, never> = (yargs: yargs.Argv) => yargs.option("name", { type: "string", demandOption: true }).option("yes", { type: "boolean" })
+  public static builder: yargs.BuilderCallback<any, never> = (yargs: yargs.Argv) =>
+    yargs
+      .option("name", { type: "string", demandOption: true, description: "The name of the connector to delete." })
+      .option("yes", { type: "boolean", description: "Set this flag to confirm the deletion." })
+      .example("$0 --name connector1 --yes", "Delete the connector named connector1.")
 
   protected async runInternal(args: DeleteCommandArgs): Promise<void> {
     if (!this._config.existsConnector(args.name)) {

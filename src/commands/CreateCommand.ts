@@ -45,6 +45,11 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
         if (/\s/.test(argv.name)) return "The name must not contain any whitespace characters."
         return true
       })
+      .example("$0 --name connector1 --version v6.14.3", "Create a new connector with the minimal number of parameters.")
+      .example(
+        "$0 --name connector1 --version v6.14.3 --db-connection-string mongodb://localhost:27017 --base-url https://backbone.example.com --client-id myClientId --client-secret myClientSecret",
+        "Create a new connector with all possible parameters."
+      )
 
   protected async runInternal(args: CreateCommandArgs): Promise<void> {
     const existsResponse = await this._releaseManager.exists(args.version)

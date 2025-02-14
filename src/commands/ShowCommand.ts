@@ -7,7 +7,10 @@ export interface ShowCommandArgs {
 }
 
 export class ShowCommand extends BaseCommand<ShowCommandArgs> {
-  public static builder: yargs.BuilderCallback<any, ShowCommandArgs> = (yargs: yargs.Argv) => yargs.option("name", { type: "string", demandOption: true })
+  public static builder: yargs.BuilderCallback<any, ShowCommandArgs> = (yargs: yargs.Argv) =>
+    yargs
+      .option("name", { type: "string", demandOption: true, description: "The name of the connector to show." })
+      .example("$0 --name connector1", "Show the details of the connector named connector1.")
 
   protected async runInternal(args: ShowCommandArgs): Promise<void> {
     if (!this._config.existsConnector(args.name)) {

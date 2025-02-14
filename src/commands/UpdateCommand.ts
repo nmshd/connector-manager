@@ -7,12 +7,12 @@ export type UpdateCommandArgs = { version?: string; rotateApiKey?: boolean; port
 export class UpdateCommand extends BaseCommand<never> {
   public static builder: yargs.BuilderCallback<any, never> = (yargs: yargs.Argv) =>
     yargs
-      .option("name", { type: "string" })
-      .option("all", { type: "boolean" })
-      .option("version", { type: "string" })
-      .option("rotate-api-key", { type: "boolean" })
-      .option("start", { type: "boolean", default: true })
-      .option("port", { type: "number" })
+      .option("name", { type: "string", description: "The name of the connector to update. Cannot be used together with --all." })
+      .option("all", { type: "boolean", description: "Update all connectors. Cannot be used together with --name." })
+      .option("version", { type: "string", description: "The version to update the connector(s) to." })
+      .option("rotate-api-key", { type: "boolean", description: "Generate a new API key for the connector(s)." })
+      .option("start", { type: "boolean", default: true, description: "Start the connector(s) after updating." })
+      .option("port", { type: "number", description: "The new port the connector should listen on. Cannot be used together with --all." })
       .conflicts("name", "all")
       .conflicts("port", "all")
       .check((argv) => {

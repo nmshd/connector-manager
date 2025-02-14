@@ -33,6 +33,10 @@ export class InitCommand extends BaseCommand<InitCommandArgs> {
         description:
           "The client secret of the OAuth2 client that should be used to authenticate the Connector on the Backbone. You can obtain it from the operator of the Backbone.",
       })
+      .example(
+        "$0 --db-connection-string mongodb://localhost:27017 --base-url https://backbone.example.com --client-id myClientId --client-secret myClientSecret",
+        "Initialize the configuration with the specified values."
+      )
 
   protected async runInternal(args: InitCommandArgs): Promise<void> {
     this._config.dbConnectionString = args.dbConnectionString

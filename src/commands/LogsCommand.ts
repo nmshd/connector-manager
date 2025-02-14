@@ -13,7 +13,13 @@ export interface LogsCommandArgs {
 
 export class LogsCommand extends BaseCommand<never> {
   public static builder: yargs.BuilderCallback<any, never> = (yargs: yargs.Argv) =>
-    yargs.option("name", { type: "string", demandOption: true }).option("lines", { type: "number", default: 100 }).option("tail", { type: "boolean", default: true })
+    yargs
+      .option("name", { type: "string", demandOption: true, description: "The name of the connector to get the logs from." })
+      .option("lines", { type: "number", default: 100, description: "The number of log lines to show." })
+      .option("tail", { type: "boolean", default: true, description: "Whether to follow the log output." })
+      .example("$0 --name connector1", "Show the last 100 log lines of the connector named connector1.")
+      .example("$0 --name connector1 --lines 50", "Show the last 50 log lines of the connector named connector1.")
+      .example("$0 --name connector1 --tail", "Show the last 100 log lines of the connector named connector1 and follow the log output.")
 
   protected async runInternal(args: LogsCommandArgs): Promise<void> {
     if (!this._config.existsConnector(args.name)) {
