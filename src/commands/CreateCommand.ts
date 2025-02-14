@@ -1,5 +1,6 @@
 import chalk from "chalk"
 import * as yargs from "yargs"
+import { ConnectorDefinition } from "../utils/Config.js"
 import { BaseCommand } from "./BaseCommand.js"
 
 export interface CreateCommandArgs {
@@ -9,6 +10,7 @@ export interface CreateCommandArgs {
   baseUrl?: string
   clientId?: string
   clientSecret?: string
+  displayName?: string
 }
 
 export class CreateCommand extends BaseCommand<CreateCommandArgs> {
@@ -39,10 +41,12 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
         description:
           "The client secret of the OAuth2 client that should be used to authenticate the Connector on the Backbone. Defaults to the value you specified during 'cman init'.",
       })
+      .option("display-name", { type: "string", description: "The display name (attribute) of the connector." })
       .check((argv) => {
         if (argv.name.trim().length === 0) return "The name cannot be empty."
         if (argv.name.toLowerCase() !== argv.name) return "The name must be all lowercase."
         if (/\s/.test(argv.name)) return "The name must not contain any whitespace characters."
+        if (argv["display-name"]?.trim().length === 0) return "The display name cannot be empty."
         return true
       })
       .example("$0 --name connector1 --version v6.14.3", "Create a new connector with the minimal number of parameters.")
@@ -74,6 +78,44 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
 
     console.log(`Successfully created the connector ${chalk.green(name)}.\n`)
 
+    if (typeof args.displayName !== "undefined") await this.setDisplayName(connector, args.displayName)
+
     await this.showInstances([connector])
+  }
+
+  private async setDisplayName(connector: ConnectorDefinition, displayName: string) {
+    const isHealthy = await this.waitForConnectorToBeHealthy(connector)
+    if (!isHealthy) {
+      console.error(`The connector ${chalk.red(connector.name)} did not become healthy. Could not set display name.`)
+      return
+    }
+
+    const result = await connector.sdk.attributes.createRepositoryAttribute({ content: { value: { "@type": "DisplayName", value: displayName } } })
+    if (result.isError) {
+      console.error(`Could not set display name: ${result.error.code}.`)
+      return
+    }
+  }
+
+  private async waitForConnectorToBeHealthy(connector: ConnectorDefinition): Promise<boolean> {
+    console.log(`Waiting for connector ${chalk.green(connector.name)} to be healthy...`)
+
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    let iterations = 0
+
+    while (iterations < 500) {
+      try {
+        const response = await connector.sdk.monitoring.getHealth()
+        if (response.isHealthy) return true
+      } catch {
+        // Ignore
+      }
+
+      iterations++
+      await new Promise((resolve) => setTimeout(resolve, 500))
+    }
+
+    return false
   }
 }
