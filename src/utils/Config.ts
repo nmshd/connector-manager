@@ -94,6 +94,10 @@ export class Config {
     platformClientId?: string,
     platformClientSecret?: string
   ): ConnectorDefinition {
+    if (this.existsConnector(name)) {
+      throw new Error(`A connector with the name ${name} already exists.`)
+    }
+
     const connector = new ConnectorDefinition(this.appDir, version, name, {
       database: {
         connectionString: dbConnectionString ?? this.dbConnectionString,
