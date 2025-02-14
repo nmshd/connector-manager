@@ -31,7 +31,7 @@ cman init --db-connection-string <connection_string> --base-url <base_url> --cli
 
 It requires the following parameters:
 
-- `db-connection-string`: A connection string to your existing MongoDB instance. This connection string will be used as a default for all the Connectors you create.
+- `db-connection-string`: The connection string to your existing MongoDB instance. This connection string will be used as a default for all the Connectors you create.
   You can find the syntax of a connection string in the [official MongoDB documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#srv-connection-format).
 - `base-url`: The base URL of the Backbone the Connector should connect to. You can obtain this URL from the operator of the Backbone.
 - `client-id`: The client ID of the OAuth2 client that should be used to authenticate the Connector on the Backbone. You can obtain it from the operator of the Backbone.
