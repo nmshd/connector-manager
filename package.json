@@ -12,7 +12,8 @@
     "cman": "dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "Connectors-Template.xlsx"
   ],
   "scripts": {
     "build": "tsc",

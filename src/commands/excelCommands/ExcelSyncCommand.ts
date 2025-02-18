@@ -11,19 +11,21 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
   public static builder: yargs.BuilderCallback<any, ExcelSyncCommandArgs> = (yargs: yargs.Argv) =>
     yargs.option("file", {
       type: "string",
-      demandOption: true,
       description: "The path to the Excel file you want to synchronize with your connector instances.",
+      default: "./Connectors.xlsx",
     })
 
   protected async runInternal(args: ExcelSyncCommandArgs): Promise<void> {
     const data = this.readFromExcel(args.file)
 
     const createdConnectors: Parameters[] = []
+
     for (const connectorProperties of data.connectors) {
       if (!this._config.existsConnector(connectorProperties["connector-id"])) {
         await this.createNewConnector(connectorProperties, data.defaults)
         console.log(`Connector ${connectorProperties["connector-id"]} created.`)
         createdConnectors.push(connectorProperties)
+        await this._config.save()
       } else {
         console.warn(`A Connector with the id '${connectorProperties["connector-id"]}' already exists. Skipping creation...`)
       }
@@ -33,8 +35,6 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
       console.log("Sync completed. No new Connectors were created.")
       return
     }
-
-    await this._config.save()
 
     await new Promise((resolve) => setTimeout(resolve, 3000))
 
