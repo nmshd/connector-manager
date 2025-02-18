@@ -1,12 +1,22 @@
-#!/usr/bin/env node
-
 import chalk from "chalk"
 import { readFile } from "fs/promises"
 import pm2 from "pm2"
 import yargs, { Argv } from "yargs"
 import { hideBin } from "yargs/helpers"
-import { ExcelBaseCommand } from "./commands/excelCommands/ExcelBaseCommand.js"
-import { CreateCommand, DeleteCommand, InitCommand, ListCommand, LogsCommand, RestartCommand, ShowCommand, StartCommand, StopCommand, UpdateCommand } from "./commands/index.js"
+import {
+  CreateCommand,
+  DeleteCommand,
+  ExcelBaseCommand,
+  InitCommand,
+  ListCommand,
+  LogsCommand,
+  RestartCommand,
+  ShowCommand,
+  StartCommand,
+  StopCommand,
+  TuiCommand,
+  UpdateCommand,
+} from "./commands/index.js"
 import { getAppDir } from "./utils/getAppDir.js"
 
 const noopBuilder = (argv: Argv) => argv
@@ -24,9 +34,10 @@ await yargs(hideBin(process.argv))
   .command("update", "Update one or all connector instance(s)", UpdateCommand.builder, async (args) => await new UpdateCommand().run(args))
   .command("excel", "Offers commands to synchronize your connector instances with an Excel file.", ExcelBaseCommand.builder)
   .command("dashboard", "show the dashboard", noopBuilder, () => new (pm2 as any).custom().dashboard())
+  .command("tui", "Starts the Connector Terminal UI (TUI) for the connector with the given id.", TuiCommand.builder, async (args) => await new TuiCommand().run(args))
   .command("info", "show information about the connector manager", noopBuilder, async () => {
-    const jsonString = (await readFile(new URL("../package.json", import.meta.url))).toString()
-    const packageJson = JSON.parse(jsonString)
+    const packageJsonString = (await readFile(new URL("../package.json", import.meta.url))).toString()
+    const packageJson = JSON.parse(packageJsonString)
 
     console.log(`Welcome to the ${chalk.blue("enmeshed Connector Manager")}!`)
     console.log(`Manager Version: ${chalk.yellow(packageJson.version)}`)
