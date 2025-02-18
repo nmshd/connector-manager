@@ -3,23 +3,23 @@ import * as yargs from "yargs"
 import { setDisplayName } from "../utils/connectorUtils.js"
 import { BaseCommand } from "./BaseCommand.js"
 
-export type UpdateCommandArgs = { version?: string; rotateApiKey?: boolean; port?: number; start: boolean; displayName?: string } & ({ name: string } | { all: true })
+export type UpdateCommandArgs = { version?: string; rotateApiKey?: boolean; port?: number; start: boolean; displayName?: string } & ({ id: string } | { all: true })
 
 export class UpdateCommand extends BaseCommand<never> {
   public static builder: yargs.BuilderCallback<any, never> = (yargs: yargs.Argv) =>
     yargs
-      .option("name", { type: "string", description: "The name of the connector to update. Cannot be used together with --all." })
-      .option("all", { type: "boolean", description: "Update all connectors. Cannot be used together with --name." })
+      .option("id", { type: "string", description: "The id of the connector to update. Cannot be used together with --all." })
+      .option("all", { type: "boolean", description: "Update all connectors. Cannot be used together with --id." })
       .option("version", { type: "string", description: "The version to update the connector(s) to." })
       .option("rotate-api-key", { type: "boolean", description: "Generate a new API key for the connector(s)." })
       .option("start", { type: "boolean", default: true, description: "Start the connector(s) after updating." })
       .option("port", { type: "number", description: "The new port the connector should listen on. Cannot be used together with --all." })
       .option("display-name", { type: "string", description: "The new display name (attribute) of the connector." })
-      .conflicts("name", "all")
+      .conflicts("id", "all")
       .conflicts("port", "all")
       .conflicts("display-name", "all")
       .check((argv) => {
-        if (!("name" in argv || "all" in argv)) return "Either --name or --all must be provided."
+        if (!("id" in argv || "all" in argv)) return "Either --id or --all must be provided."
 
         if (typeof argv.version === "undefined" && !argv.rotateApiKey && typeof argv.port === "undefined" && typeof argv["display-name"] === "undefined") {
           return "At least one of --version, --rotateApiKey, --display-name or --port must be provided."
@@ -45,7 +45,7 @@ export class UpdateCommand extends BaseCommand<never> {
 
     if ("all" in args) {
       for (const connector of this._config.connectors) {
-        await this.update(connector.name, args)
+        await this.update(connector.id, args)
       }
 
       await this.showInstances(this._config.connectors)
@@ -53,8 +53,8 @@ export class UpdateCommand extends BaseCommand<never> {
       return
     }
 
-    if (!this._config.existsConnector(args.name)) {
-      console.error(`A connector with the name ${chalk.red(args.name)} does not exist.`)
+    if (!this._config.existsConnector(args.id)) {
+      console.error(`A connector with the id ${chalk.red(args.id)} does not exist.`)
       process.exit(1)
     }
 
@@ -62,21 +62,21 @@ export class UpdateCommand extends BaseCommand<never> {
       const connectorUsingPort = this._config.connectors.find((c) => c.config.infrastructure.httpServer.port === args.port)
 
       if (connectorUsingPort) {
-        console.error(`Port ${chalk.red(args.port)} is already in use by the connector ${chalk.red(connectorUsingPort.name)}.`)
+        console.error(`Port ${chalk.red(args.port)} is already in use by the connector ${chalk.red(connectorUsingPort.id)}.`)
         process.exit(1)
       }
     }
 
-    await this.update(args.name, args)
+    await this.update(args.id, args)
 
-    const instance = this._config.getConnector(args.name)
+    const instance = this._config.getConnector(args.id)
     await this.showInstances([instance!])
   }
 
-  private async update(name: string, args: UpdateCommandArgs) {
-    console.log(`Updating connector ${chalk.green(name)}...`)
+  private async update(id: string, args: UpdateCommandArgs) {
+    console.log(`Updating connector ${chalk.green(id)}...`)
 
-    const connector = this._config.getConnector(name)!
+    const connector = this._config.getConnector(id)!
 
     if (args.rotateApiKey) connector.rotateApiKey()
     if (typeof args.version !== "undefined") connector.version = args.version
@@ -85,17 +85,17 @@ export class UpdateCommand extends BaseCommand<never> {
     await this._config.save()
 
     if (!args.start) {
-      console.log(`Connector ${chalk.green(name)} updated.`)
-      console.log(`Use ${chalk.cyan(`start --name ${name}`)} to start the connector.`)
+      console.log(`Connector ${chalk.green(id)} updated.`)
+      console.log(`Use ${chalk.cyan(`start --id ${id}`)} to start the connector.`)
       console.log()
       return
     }
 
-    await this._processManager.start(name)
+    await this._processManager.start(id)
 
     if (typeof args.displayName !== "undefined") await setDisplayName(connector, args.displayName.trim())
 
-    console.log(`Connector ${chalk.green(name)} updated and (re-)started.`)
+    console.log(`Connector ${chalk.green(id)} updated and (re-)started.`)
     console.log()
   }
 }

@@ -6,7 +6,7 @@ import * as yargs from "yargs"
 import { BaseCommand } from "./BaseCommand.js"
 
 export interface LogsCommandArgs {
-  name: string
+  id: string
   lines: number
   tail: boolean
 }
@@ -14,20 +14,20 @@ export interface LogsCommandArgs {
 export class LogsCommand extends BaseCommand<never> {
   public static builder: yargs.BuilderCallback<any, never> = (yargs: yargs.Argv) =>
     yargs
-      .option("name", { type: "string", demandOption: true, description: "The name of the connector to get the logs from." })
+      .option("id", { type: "string", demandOption: true, description: "The id of the connector to get the logs from." })
       .option("lines", { type: "number", default: 100, description: "The number of log lines to show." })
       .option("tail", { type: "boolean", default: true, description: "Whether to follow the log output." })
-      .example("$0 --name connector1", "Show the last 100 log lines of the connector named connector1.")
-      .example("$0 --name connector1 --lines 50", "Show the last 50 log lines of the connector named connector1.")
-      .example("$0 --name connector1 --tail", "Show the last 100 log lines of the connector named connector1 and follow the log output.")
+      .example("$0 --id connector1", "Show the last 100 log lines of the connector with id 'connector1'.")
+      .example("$0 --id connector1 --lines 50", "Show the last 50 log lines of the connector with id 'connector1'.")
+      .example("$0 --id connector1 --tail", "Show the last 100 log lines of the connector with id 'connector1' and follow the log output.")
 
   protected async runInternal(args: LogsCommandArgs): Promise<void> {
-    if (!this._config.existsConnector(args.name)) {
-      console.error(`A connector with the name ${chalk.red(args.name)} does not exist.`)
+    if (!this._config.existsConnector(args.id)) {
+      console.error(`A connector with the id '${chalk.red(args.id)}' does not exist.`)
       process.exit(1)
     }
 
-    const connector = this._config.getConnector(args.name)
+    const connector = this._config.getConnector(args.id)
     const lastLines = await this.readLastNLines(connector!.logFilePath, args.lines)
     console.log(lastLines)
 

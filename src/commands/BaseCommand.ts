@@ -40,14 +40,14 @@ export abstract class BaseCommand<TArgs> {
   protected abstract runInternal(args: TArgs): Promise<void> | void
 
   protected async showInstances(connectors: ConnectorDefinition[]): Promise<void> {
-    const tableEntries: (string | number)[][] = [["Name", "Version", "Status", "CPU", "Memory", "Uptime", "PID", "Port", "Api Key", "Display Name(s)"]]
+    const tableEntries: (string | number)[][] = [["ID", "Version", "Status", "CPU", "Memory", "Uptime", "PID", "Port", "Api Key", "Display Name(s)"]]
 
-    const statuses = await this._processManager.status(connectors.length === 1 ? connectors[0].name : "all")
+    const statuses = await this._processManager.status(connectors.length === 1 ? connectors[0].id : "all")
 
     const promises = connectors.map((connector) =>
       this.getConnectorInfo(
         connector,
-        statuses.find((status) => status.name === connector.name)
+        statuses.find((status) => status.name === connector.id)
       )
     )
 
@@ -60,7 +60,7 @@ export abstract class BaseCommand<TArgs> {
 
   private async getConnectorInfo(connector: ConnectorDefinition, status: ProcessDescription | undefined): Promise<(string | number)[]> {
     const connectorInfo = [
-      connector.name,
+      connector.id,
       connector.version,
       status?.pid ? chalk.green("running") : chalk.red("stopped"),
       typeof status?.monit?.cpu !== "undefined" ? `${status.monit.cpu}%` : "",

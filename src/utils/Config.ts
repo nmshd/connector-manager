@@ -88,15 +88,15 @@ export class Config {
 
   public addConnector(
     version: string,
-    name: string,
+    id: string,
     dbConnectionString?: string,
     platformBaseUrl?: string,
     platformClientId?: string,
     platformClientSecret?: string,
     port?: number
   ): ConnectorDefinition {
-    if (this.existsConnector(name)) {
-      throw new Error(`A connector with the name ${name} already exists.`)
+    if (this.existsConnector(id)) {
+      throw new Error(`A connector with the id ${id} already exists.`)
     }
 
     dbConnectionString = dbConnectionString === "" || dbConnectionString === undefined ? this.dbConnectionString : dbConnectionString
@@ -105,10 +105,10 @@ export class Config {
     platformClientSecret = platformClientSecret === "" || platformClientSecret === undefined ? this.platformClientSecret : platformClientSecret
     port = port === undefined || port === 0 ? this.findFreePort() : port
 
-    const connector = new ConnectorDefinition(this.appDir, name, version, {
+    const connector = new ConnectorDefinition(this.appDir, id, version, {
       database: {
         connectionString: dbConnectionString,
-        dbName: name,
+        dbName: id,
       },
       transportLibrary: {
         baseUrl: platformBaseUrl,
@@ -134,35 +134,35 @@ export class Config {
     return port
   }
 
-  public deleteConnector(name: string): void {
-    const connector = this.#connectors.find((c) => c.name === name)
+  public deleteConnector(id: string): void {
+    const connector = this.#connectors.find((c) => c.id === id)
 
     if (!connector) return
 
-    this.#connectors = this.#connectors.filter((c) => c.name !== name)
+    this.#connectors = this.#connectors.filter((c) => c.id !== id)
 
     this.deletedConnectors.push(connector)
   }
 
-  public existsConnector(name: string): boolean {
-    return this.#connectors.some((c) => c.name === name)
+  public existsConnector(id: string): boolean {
+    return this.#connectors.some((c) => c.id === id)
   }
 
-  public getConnector(name: string): ConnectorDefinition | undefined {
-    return this.#connectors.find((c) => c.name === name)
+  public getConnector(id: string): ConnectorDefinition | undefined {
+    return this.#connectors.find((c) => c.id === id)
   }
 }
 
 export class ConnectorDefinition {
   public constructor(
     private readonly appDir: string,
-    public readonly name: string,
+    public readonly id: string,
     public version: string,
     public config: ConnectorConfig
   ) {}
 
   public get directory(): string {
-    return path.join(this.appDir, "connectors", this.name)
+    return path.join(this.appDir, "connectors", this.id)
   }
 
   public get configFilePath(): string {
@@ -181,10 +181,10 @@ export class ConnectorDefinition {
   }
 
   public static async load(json: any, appDir: string): Promise<ConnectorDefinition> {
-    const configPath = this.buildFilePath(appDir, json.name, "config.json")
+    const configPath = this.buildFilePath(appDir, json.id, "config.json")
     const configContent = await fs.promises.readFile(configPath)
     const configJson = JSON.parse(configContent.toString())
-    return new ConnectorDefinition(appDir, json.name, json.version, configJson)
+    return new ConnectorDefinition(appDir, json.id, json.version, configJson)
   }
 
   public rotateApiKey(): void {
@@ -194,12 +194,12 @@ export class ConnectorDefinition {
   public toJson(): any {
     return {
       version: this.version,
-      name: this.name,
+      id: this.id,
     }
   }
 
-  private static buildFilePath(appDir: string, name: string, file: string): string {
-    return path.join(appDir, "connectors", name, file)
+  private static buildFilePath(appDir: string, id: string, file: string): string {
+    return path.join(appDir, "connectors", id, file)
   }
 }
 

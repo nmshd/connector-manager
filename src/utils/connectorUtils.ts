@@ -5,7 +5,7 @@ import { ConnectorDefinition } from "./Config.js"
 export async function setDisplayName(connector: ConnectorDefinition, displayName: string) {
   const isHealthy = await waitForConnectorToBeHealthy(connector)
   if (!isHealthy) {
-    console.error(`The connector ${chalk.red(connector.name)} did not become healthy. Could not set display name.`)
+    console.error(`The connector ${chalk.red(connector.id)} did not become healthy. Could not set display name.`)
     return
   }
 
@@ -32,7 +32,7 @@ export async function setDisplayName(connector: ConnectorDefinition, displayName
 }
 
 export async function waitForConnectorToBeHealthy(connector: ConnectorDefinition): Promise<boolean> {
-  console.log(`Waiting for connector ${chalk.green(connector.name)} to be healthy...`)
+  console.log(`Waiting for connector ${chalk.green(connector.id)} to be healthy...`)
 
   await new Promise((resolve) => setTimeout(resolve, 1000))
 

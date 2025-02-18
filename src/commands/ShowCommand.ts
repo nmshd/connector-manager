@@ -3,22 +3,22 @@ import * as yargs from "yargs"
 import { BaseCommand } from "./BaseCommand.js"
 
 export interface ShowCommandArgs {
-  name: string
+  id: string
 }
 
 export class ShowCommand extends BaseCommand<ShowCommandArgs> {
   public static builder: yargs.BuilderCallback<any, ShowCommandArgs> = (yargs: yargs.Argv) =>
     yargs
-      .option("name", { type: "string", demandOption: true, description: "The name of the connector to show." })
-      .example("$0 --name connector1", "Show the details of the connector named connector1.")
+      .option("id", { type: "string", demandOption: true, description: "The id of the connector to show." })
+      .example("$0 --id connector1", "Show the details of the connector with id connector1.")
 
   protected async runInternal(args: ShowCommandArgs): Promise<void> {
-    if (!this._config.existsConnector(args.name)) {
-      console.error(`A connector with the name ${chalk.red(args.name)} does not exist.`)
+    if (!this._config.existsConnector(args.id)) {
+      console.error(`A connector with the id '${chalk.red(args.id)}' does not exist.`)
       process.exit(1)
     }
 
-    const connector = this._config.getConnector(args.name)
+    const connector = this._config.getConnector(args.id)
     await this.showInstances([connector!])
   }
 }

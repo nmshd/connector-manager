@@ -36,8 +36,8 @@ export class ProcessManager {
     await Promise.race([promise, timeout])
   }
 
-  public async start(name: string) {
-    const connectorFromConfig = this.config.getConnector(name)
+  public async start(id: string) {
+    const connectorFromConfig = this.config.getConnector(id)
 
     if (!connectorFromConfig) throw new Error("Connector not found in config")
 
@@ -46,7 +46,7 @@ export class ProcessManager {
     await new Promise<void>((resolve, reject) => {
       this.#pm2.start(
         {
-          name: name,
+          name: id,
           script: path.join(connectorPath, "dist", "index.js"),
           args: ["start", "-c", connectorFromConfig.configFilePath],
           merge_logs: true,
@@ -61,26 +61,26 @@ export class ProcessManager {
     })
   }
 
-  public async delete(name: string) {
+  public async delete(id: string) {
     await new Promise<void>((resolve, reject) => {
-      this.#pm2.delete(name, (err: any) => {
+      this.#pm2.delete(id, (err: any) => {
         if (err) reject(err)
         else resolve()
       })
     })
   }
 
-  public async restart(name: string) {
+  public async restart(id: string) {
     await new Promise<void>((resolve, reject) => {
-      this.#pm2.restart(name, (err: any) => {
+      this.#pm2.restart(id, (err: any) => {
         if (err) reject(err)
         else resolve()
       })
     })
   }
 
-  public async status(name: string): Promise<pm2.ProcessDescription[]> {
-    if (name === "all") {
+  public async status(id: string): Promise<pm2.ProcessDescription[]> {
+    if (id === "all") {
       return await new Promise<pm2.ProcessDescription[]>((resolve, reject) => {
         this.#pm2.list((err: any, pd) => {
           if (err) return reject(err)
@@ -90,15 +90,15 @@ export class ProcessManager {
     }
 
     return await new Promise<pm2.ProcessDescription[]>((resolve, reject) => {
-      this.#pm2.describe(name, (err: any, pd) => {
+      this.#pm2.describe(id, (err: any, pd) => {
         if (err) return reject(err)
         resolve(pd)
       })
     })
   }
 
-  public async isRunning(name: string) {
-    const status = await this.status(name)
+  public async isRunning(id: string) {
+    const status = await this.status(id)
 
     return status.length > 0
   }

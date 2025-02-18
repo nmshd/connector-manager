@@ -40,7 +40,7 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
 
     console.log("Sync completed. The following Connectors were created:")
 
-    await this.showInstances(this._config.connectors.filter((c) => createdConnectors.some((p) => p["connector-id"] === c.name)))
+    await this.showInstances(this._config.connectors.filter((c) => createdConnectors.some((p) => p["connector-id"] === c.id)))
   }
 
   private readFromExcel(filename: string) {
@@ -66,7 +66,7 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
 
     await this._config.save()
 
-    await this._processManager.start(connector.name)
+    await this._processManager.start(connector.id)
 
     if (parameters["organization-display-name"]) await setDisplayName(connector, parameters["organization-display-name"].trim())
   }

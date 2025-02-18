@@ -4,7 +4,7 @@ import { setDisplayName } from "../utils/connectorUtils.js"
 import { BaseCommand } from "./BaseCommand.js"
 
 export interface CreateCommandArgs {
-  name: string
+  id: string
   version: string
   dbConnectionString?: string
   baseUrl?: string
@@ -16,10 +16,10 @@ export interface CreateCommandArgs {
 export class CreateCommand extends BaseCommand<CreateCommandArgs> {
   public static builder: yargs.BuilderCallback<any, CreateCommandArgs> = (yargs: yargs.Argv) =>
     yargs
-      .option("name", {
+      .option("id", {
         type: "string",
         demandOption: true,
-        description: "The name of the connector to create. Must be unique, contain only lowercase characters and must not contain any whitespace characters.",
+        description: "The id of the connector to create. Must be unique, contain only lowercase characters and must not contain any whitespace characters.",
       })
       .option("version", {
         type: "string",
@@ -43,15 +43,15 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
       })
       .option("display-name", { type: "string", description: "The display name (attribute) of the connector." })
       .check((argv) => {
-        if (argv.name.trim().length === 0) return "The name cannot be empty."
-        if (argv.name.toLowerCase() !== argv.name) return "The name must be all lowercase."
-        if (/\s/.test(argv.name)) return "The name must not contain any whitespace characters."
+        if (argv.id.trim().length === 0) return "The id cannot be empty."
+        if (argv.id.toLowerCase() !== argv.id) return "The id must be all lowercase."
+        if (/\s/.test(argv.id)) return "The id must not contain any whitespace characters."
         if (argv["display-name"]?.trim().length === 0) return "The display name cannot be empty."
         return true
       })
-      .example("$0 --name connector1", "Create a new connector with the minimal number of parameters.")
+      .example("$0 --id connector1", "Create a new connector with the minimal number of parameters.")
       .example(
-        "$0 --name connector1 --version v6.14.3 --db-connection-string mongodb://localhost:27017 --base-url https://backbone.example.com --client-id myClientId --client-secret myClientSecret",
+        "$0 --id connector1 --version v6.14.3 --db-connection-string mongodb://localhost:27017 --base-url https://backbone.example.com --client-id myClientId --client-secret myClientSecret",
         "Create a new connector with all possible parameters."
       )
 
@@ -62,21 +62,21 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
       process.exit(1)
     }
 
-    const name = args.name.trim()
+    const id = args.id.trim()
 
-    if (this._config.existsConnector(name)) {
-      console.error(`A connector with the name ${chalk.red(name)} already exists.`)
+    if (this._config.existsConnector(id)) {
+      console.error(`A connector with the id ${chalk.red(id)} already exists.`)
       process.exit(1)
     }
 
     console.log("Creating connector...")
 
-    const connector = this._config.addConnector(args.version, name, args.dbConnectionString, args.baseUrl, args.clientId, args.clientSecret)
+    const connector = this._config.addConnector(args.version, id, args.dbConnectionString, args.baseUrl, args.clientId, args.clientSecret)
     await this._config.save()
 
-    await this._processManager.start(name)
+    await this._processManager.start(id)
 
-    console.log(`Successfully created the connector ${chalk.green(name)}.\n`)
+    console.log(`Successfully created the connector ${chalk.green(id)}.\n`)
 
     if (typeof args.displayName !== "undefined") await setDisplayName(connector, args.displayName.trim())
 
