@@ -22,9 +22,7 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     const data = this.convertToJSON(workSheet.data)
 
     for (const connectorProperties of data) {
-      if (this._config.existsConnector(connectorProperties.name)) {
-        await this.updateExistingConnector(connectorProperties)
-      } else {
+      if (!this._config.existsConnector(connectorProperties["connector-id"])) {
         await this.createNewConnector(connectorProperties)
       }
     }
@@ -36,25 +34,8 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     await this.showInstances(this._config.connectors)
   }
 
-  private async updateExistingConnector(parameters: Parameters) {
-    console.log(`Updating connector ${parameters.name}...`)
-
-    const connector = this._config.getConnector(parameters.name)!
-
-    connector.version = parameters.version
-    connector.config.database.connectionString = parameters["db-connection-string"] ?? this._config.dbConnectionString
-    connector.config.transportLibrary.baseUrl = parameters["base-url"] ?? this._config.platformBaseUrl
-    connector.config.transportLibrary.platformClientId = parameters["client-id"] ?? this._config.platformClientId
-    connector.config.transportLibrary.platformClientSecret = parameters["client-secret"] ?? this._config.platformClientSecret
-    connector.config.infrastructure.httpServer.port = parameters.port ? parseInt(parameters.port) : connector.config.infrastructure.httpServer.port
-
-    await this._config.save()
-
-    await this._processManager.restart(connector.name)
-  }
-
   private async createNewConnector(parameters: Parameters) {
-    console.log(`Creating connector ${parameters.name}...`)
+    console.log(`Creating connector ${parameters["connector-id"]}...`)
 
     const connector = this._config.addConnector(
       parameters.version,
