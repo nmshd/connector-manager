@@ -16,15 +16,12 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     })
 
   protected async runInternal(args: ExcelSyncCommandArgs): Promise<void> {
-    const workSheets = xlsx.parse(args.file)
-    const workSheet = workSheets[0]
-
-    const data = this.convertToJSON(workSheet.data)
+    const data = this.readFromExcel(args.file)
 
     const createdConnectors: Parameters[] = []
-    for (const connectorProperties of data) {
+    for (const connectorProperties of data.connectors) {
       if (!this._config.existsConnector(connectorProperties["connector-id"])) {
-        await this.createNewConnector(connectorProperties)
+        await this.createNewConnector(connectorProperties, data.defaults)
         console.log(`Connector ${connectorProperties["connector-id"]} created.`)
         createdConnectors.push(connectorProperties)
       } else {
@@ -46,16 +43,24 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     await this.showInstances(this._config.connectors.filter((c) => createdConnectors.some((p) => p["connector-id"] === c.name)))
   }
 
-  private async createNewConnector(parameters: Parameters) {
+  private readFromExcel(filename: string) {
+    const workSheets = xlsx.parse(filename)
+
+    const parameters = this.parseParameters(workSheets[0].data)
+    const defaultValues = this.parseDefaults(workSheets[1].data)
+    return new ExcelData(parameters, defaultValues)
+  }
+
+  private async createNewConnector(parameters: Parameters, defaults: DefaultValues) {
     console.log(`Creating connector ${parameters["connector-id"]}...`)
 
     const connector = this._config.addConnector(
-      parameters["connector-version"],
+      parameters["connector-version"] ?? defaults["connector-version"] ?? "6.14.4", // TODO: replace with latest version
       parameters["connector-id"],
-      parameters["connector-db-connection-string"],
-      parameters["backbone-base-url"],
-      parameters["backbone-client-id"],
-      parameters["backbone-client-secret"],
+      parameters["connector-db-connection-string"] ?? defaults["connector-db-connection-string"],
+      parameters["backbone-base-url"] ?? defaults["backbone-base-url"],
+      parameters["backbone-client-id"] ?? defaults["backbone-client-id"],
+      parameters["backbone-client-secret"] ?? defaults["backbone-client-secret"],
       parameters["connector-port"] ? parseInt(parameters["connector-port"]) : undefined
     )
 
@@ -66,10 +71,10 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     if (parameters["organization-display-name"]) await setDisplayName(connector, parameters["organization-display-name"].trim())
   }
 
-  private convertToJSON(array: string[][]): Parameters[] {
+  private parseParameters(array: string[][]): Parameters[] {
     const headers = array[0]
 
-    const jsonData = array.slice(1).map((row) => {
+    const parameters = array.slice(1).map((row) => {
       const obj = new Parameters()
       for (const [index, header] of headers.entries()) {
         const lowerCaseHeader = header.toLowerCase()
@@ -85,7 +90,38 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
 
       return obj
     })
-    return jsonData
+    return parameters
+  }
+
+  private parseDefaults(array: string[][]): DefaultValues {
+    const headers = array[0]
+    const row = array[1]
+
+    const defaultValues = new DefaultValues()
+
+    for (const [index, header] of headers.entries()) {
+      const lowerCaseHeader = header.toLowerCase()
+
+      const key = Object.keys(defaultValues).find((k) => k.toLowerCase() === lowerCaseHeader)
+
+      if (key) {
+        defaultValues[key as keyof DefaultValues] = row[index]
+      } else {
+        throw new Error(`There is no matching parameter for the column '${header}'`)
+      }
+    }
+
+    return defaultValues
+  }
+}
+
+class ExcelData {
+  public readonly connectors: Parameters[]
+  public readonly defaults: DefaultValues
+
+  public constructor(parameters: Parameters[], defaults: DefaultValues) {
+    this.connectors = parameters
+    this.defaults = defaults
   }
 }
 
@@ -93,7 +129,7 @@ class Parameters {
   public "connector-id" = ""
   public "connector-db-connection-string"?: string
   public "connector-port"?: string
-  public "connector-version" = ""
+  public "connector-version"? = ""
   public "organization-display-name"?: string
   public "backbone-base-url"?: string
   public "backbone-client-id"?: string
@@ -102,6 +138,7 @@ class Parameters {
 
 class DefaultValues {
   public "connector-db-connection-string"?: string
+  public "connector-version"?: string
   public "backbone-base-url"?: string
   public "backbone-client-id"?: string
   public "backbone-client-secret"?: string
