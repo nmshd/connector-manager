@@ -21,17 +21,29 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
 
     const data = this.convertToJSON(workSheet.data)
 
+    const createdConnectors: Parameters[] = []
     for (const connectorProperties of data) {
       if (!this._config.existsConnector(connectorProperties["connector-id"])) {
         await this.createNewConnector(connectorProperties)
+        console.log(`Connector ${connectorProperties["connector-id"]} created.`)
+        createdConnectors.push(connectorProperties)
+      } else {
+        console.warn(`A Connector with the id '${connectorProperties["connector-id"]}' already exists. Skipping creation...`)
       }
+    }
+
+    if (createdConnectors.length === 0) {
+      console.log("Sync completed. No new Connectors were created.")
+      return
     }
 
     await this._config.save()
 
+    console.log("Sync completed. The following Connectors were created:")
+
     await new Promise((resolve) => setTimeout(resolve, 1000 * this._config.connectors.length))
 
-    await this.showInstances(this._config.connectors)
+    await this.showInstances(this._config.connectors.filter((c) => createdConnectors.some((p) => p["connector-id"] === c.name)))
   }
 
   private async createNewConnector(parameters: Parameters) {
