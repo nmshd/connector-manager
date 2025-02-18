@@ -5,6 +5,7 @@ import { readFile } from "fs/promises"
 import pm2 from "pm2"
 import yargs, { Argv } from "yargs"
 import { hideBin } from "yargs/helpers"
+import { ExcelBaseCommand } from "./commands/excelCommands/ExcelBaseCommand.js"
 import { CreateCommand, DeleteCommand, InitCommand, ListCommand, LogsCommand, RestartCommand, ShowCommand, StartCommand, StopCommand, UpdateCommand } from "./commands/index.js"
 import { getAppDir } from "./utils/getAppDir.js"
 
@@ -21,7 +22,7 @@ await yargs(hideBin(process.argv))
   .command("restart", "Restart one or all connector instance(s)", RestartCommand.builder, async (args) => await new RestartCommand().run(args))
   .command("logs", "Show logs for a connector instance", LogsCommand.builder, async (args) => await new LogsCommand().run(args))
   .command("update", "Update one or all connector instance(s)", UpdateCommand.builder, async (args) => await new UpdateCommand().run(args))
-  // .command("excel", "Offers commands to synchronize your connector instances with an Excel file.", ExcelBaseCommand.builder)
+  .command("excel", "Offers commands to synchronize your connector instances with an Excel file.", ExcelBaseCommand.builder)
   .command("dashboard", "show the dashboard", noopBuilder, () => new (pm2 as any).custom().dashboard())
   .command("info", "show information about the connector manager", noopBuilder, async () => {
     const jsonString = (await readFile(new URL("../package.json", import.meta.url))).toString()
