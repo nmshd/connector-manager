@@ -21,8 +21,6 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
 
     const data = this.convertToJSON(workSheet.data)
 
-    await this.deleteOrphanedConnectors(data)
-
     for (const connectorProperties of data) {
       if (this._config.existsConnector(connectorProperties.name)) {
         await this.updateExistingConnector(connectorProperties)
@@ -73,22 +71,6 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     await this._processManager.start(connector.name)
 
     if (parameters["initial-display-name"]) await setDisplayName(connector, parameters["initial-display-name"].trim())
-  }
-
-  private async deleteOrphanedConnectors(parameters: Parameters[]) {
-    const connectorsWithNoMatchingRowInExcel = this._config.connectors.filter((c) => !parameters.some((d) => d.name === c.name))
-
-    for (const connectorParameters of connectorsWithNoMatchingRowInExcel) {
-      console.log(`Deleting orphaned connector ${connectorParameters.name}...`)
-
-      const status = await this._processManager.status(connectorParameters.name)
-
-      if (status[0]?.pid) {
-        await this._processManager.delete(connectorParameters.name)
-      }
-
-      this._config.deleteConnector(connectorParameters.name)
-    }
   }
 
   private convertToJSON(array: string[][]): Parameters[] {
