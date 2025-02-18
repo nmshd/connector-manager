@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import chalk from "chalk"
 import { readFile } from "fs/promises"
 import pm2 from "pm2"
