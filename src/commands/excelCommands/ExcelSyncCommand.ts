@@ -82,7 +82,7 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
         const key = Object.keys(obj).find((k) => k.toLowerCase() === lowerCaseHeader)
 
         if (key) {
-          obj[key as keyof Parameters] = row[index]
+          obj[key as keyof Parameters] = row[index]?.toString()
         } else {
           throw new Error(`There is no matching parameter for the column '${header}'`)
         }
