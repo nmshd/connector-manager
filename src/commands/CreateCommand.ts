@@ -23,8 +23,8 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
       })
       .option("version", {
         type: "string",
-        demandOption: true,
-        description: "The version of the connector to create. You can find a list of available versions on https://github.com/nmshd/connector/releases.",
+        description:
+          "The version of the connector to create. You can find a list of available versions on https://github.com/nmshd/connector/releases. If none is passed, the latest version is used.",
       })
       .option("db-connection-string", {
         type: "string",
@@ -49,7 +49,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
         if (argv["display-name"]?.trim().length === 0) return "The display name cannot be empty."
         return true
       })
-      .example("$0 --name connector1 --version v6.14.3", "Create a new connector with the minimal number of parameters.")
+      .example("$0 --name connector1", "Create a new connector with the minimal number of parameters.")
       .example(
         "$0 --name connector1 --version v6.14.3 --db-connection-string mongodb://localhost:27017 --base-url https://backbone.example.com --client-id myClientId --client-secret myClientSecret",
         "Create a new connector with all possible parameters."

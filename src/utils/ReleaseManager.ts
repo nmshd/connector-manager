@@ -10,6 +10,17 @@ import { ReadableStream } from "stream/web"
 import { getAppDir } from "./getAppDir.js"
 
 export class ReleaseManager {
+  public async getLatestVersionNumber(): Promise<string> {
+    const octokit = new Octokit()
+
+    const { data: release } = await octokit.rest.repos.getLatestRelease({
+      owner: "nmshd",
+      repo: "connector",
+    })
+
+    return release.tag_name
+  }
+
   public async provideRelease(version: string): Promise<string> {
     const releasesDir = path.join(getAppDir(), "releases")
     const connectorDir = path.join(releasesDir, `connector-${version}`)

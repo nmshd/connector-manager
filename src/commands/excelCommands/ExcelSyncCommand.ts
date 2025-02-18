@@ -36,9 +36,9 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
 
     await this._config.save()
 
-    console.log("Sync completed. The following Connectors were created:")
+    await new Promise((resolve) => setTimeout(resolve, 3000))
 
-    await new Promise((resolve) => setTimeout(resolve, 1000 * this._config.connectors.length))
+    console.log("Sync completed. The following Connectors were created:")
 
     await this.showInstances(this._config.connectors.filter((c) => createdConnectors.some((p) => p["connector-id"] === c.name)))
   }
@@ -55,7 +55,7 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     console.log(`Creating connector ${parameters["connector-id"]}...`)
 
     const connector = this._config.addConnector(
-      parameters["connector-version"] ?? defaults["connector-version"] ?? "6.14.4", // TODO: replace with latest version
+      parameters["connector-version"] ?? defaults["connector-version"] ?? (await this._releaseManager.getLatestVersionNumber()),
       parameters["connector-id"],
       parameters["connector-db-connection-string"] ?? defaults["connector-db-connection-string"],
       parameters["backbone-base-url"] ?? defaults["backbone-base-url"],
