@@ -38,20 +38,20 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     console.log(`Creating connector ${parameters["connector-id"]}...`)
 
     const connector = this._config.addConnector(
-      parameters.version,
-      parameters.name,
-      parameters["db-connection-string"],
-      parameters["base-url"],
-      parameters["client-id"],
-      parameters["client-secret"],
-      parameters.port ? parseInt(parameters.port) : undefined
+      parameters["connector-version"],
+      parameters["connector-id"],
+      parameters["connector-db-connection-string"],
+      parameters["backbone-base-url"],
+      parameters["backbone-client-id"],
+      parameters["backbone-client-secret"],
+      parameters["connector-port"] ? parseInt(parameters["connector-port"]) : undefined
     )
 
     await this._config.save()
 
     await this._processManager.start(connector.name)
 
-    if (parameters["initial-display-name"]) await setDisplayName(connector, parameters["initial-display-name"].trim())
+    if (parameters["organization-display-name"]) await setDisplayName(connector, parameters["organization-display-name"].trim())
   }
 
   private convertToJSON(array: string[][]): Parameters[] {
@@ -78,12 +78,19 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
 }
 
 class Parameters {
-  public "name" = ""
-  public version = ""
-  public port?: string
-  public "initial-display-name"?: string
-  public "base-url"?: string
-  public "client-id"?: string
-  public "client-secret"?: string
-  public "db-connection-string"?: string
+  public "connector-id" = ""
+  public "connector-db-connection-string"?: string
+  public "connector-port"?: string
+  public "connector-version" = ""
+  public "organization-display-name"?: string
+  public "backbone-base-url"?: string
+  public "backbone-client-id"?: string
+  public "backbone-client-secret"?: string
+}
+
+class DefaultValues {
+  public "connector-db-connection-string"?: string
+  public "backbone-base-url"?: string
+  public "backbone-client-id"?: string
+  public "backbone-client-secret"?: string
 }
