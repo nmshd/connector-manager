@@ -24,7 +24,7 @@ import { getAppDir } from "./utils/getAppDir.js"
 const noopBuilder = (argv: Argv) => argv
 
 await yargs(hideBin(process.argv))
-  .command("init", "Initialized the connector manager.", InitCommand.builder, async (args) => await new InitCommand().run(args, false))
+  .command("init", "Initialize the connector manager.", InitCommand.builder, async (args) => await new InitCommand().run(args, false))
   .command("create", "Create a new connector instance", CreateCommand.builder, async (args) => await new CreateCommand().run(args))
   .command("list", "List all connector instances", ListCommand.builder, async (args) => await new ListCommand().run(args))
   .command("show", "Show information for a specific connector instance", ShowCommand.builder, async (args) => await new ShowCommand().run(args))
@@ -34,10 +34,10 @@ await yargs(hideBin(process.argv))
   .command("restart", "Restart one or all connector instance(s)", RestartCommand.builder, async (args) => await new RestartCommand().run(args))
   .command("logs", "Show logs for a connector instance", LogsCommand.builder, async (args) => await new LogsCommand().run(args))
   .command("update", "Update one or all connector instance(s)", UpdateCommand.builder, async (args) => await new UpdateCommand().run(args))
-  .command("excel", "Offers commands to synchronize your connector instances with an Excel file.", ExcelBaseCommand.builder)
-  .command("dashboard", "show the dashboard", noopBuilder, () => new (pm2 as any).custom().dashboard())
-  .command("tui", "Starts the Connector Terminal UI (TUI) for the connector with the given id.", TuiCommand.builder, async (args) => await new TuiCommand().run(args))
-  .command("info", "show information about the connector manager", noopBuilder, async () => {
+  .command("excel", "Commands to synchronize your connector instances with an Excel file.", ExcelBaseCommand.builder)
+  .command("dashboard", "Show the dashboard", noopBuilder, () => new (pm2 as any).custom().dashboard())
+  .command("tui", "Start the Connector Terminal UI (TUI) for the connector with the given id.", TuiCommand.builder, async (args) => await new TuiCommand().run(args))
+  .command("info", "Show information about the connector manager", noopBuilder, async () => {
     const packageJsonString = (await readFile(new URL("../package.json", import.meta.url))).toString()
     const packageJson = JSON.parse(packageJsonString)
 
