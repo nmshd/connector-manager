@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@nmshd/connector-sdk": "^6.14.5",
+    "@nmshd/connector-tui": "^2.2.2",
     "adm-zip": "^0.5.16",
     "chalk": "^5.4.1",
     "node-xlsx": "^0.24.0",

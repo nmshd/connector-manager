@@ -1,4 +1,4 @@
-import { spawn } from "child_process"
+import { ConnectorTUI } from "@nmshd/connector-tui"
 import * as yargs from "yargs"
 import { BaseCommand } from "./BaseCommand.js"
 
@@ -13,21 +13,12 @@ export class TuiCommand extends BaseCommand<never> {
       .example("$0 --id connector1", "Start the Connector TUI for the connector with id 'connector1'.")
 
   protected async runInternal(args: TuiCommandArgs): Promise<void> {
-    const connector = this._config.getConnector(args.id)!
+    const connector = this._config.getConnector(args.id)
+    if (!connector) {
+      throw new Error(`A connector with the id '${args.id}' does not exist.`)
+    }
 
-    await new Promise<void>((resolve, _) => {
-      const childProcess = spawn("npx", ["--yes", "@nmshd/connector-tui"], {
-        stdio: "inherit",
-        env: {
-          ...process.env,
-          BASE_URL: `http://localhost:${connector.config.infrastructure.httpServer.port}`,
-          API_KEY: connector.config.infrastructure.httpServer.apiKey,
-        },
-      })
-
-      childProcess.on("close", () => {
-        resolve()
-      })
-    })
+    const tui = await ConnectorTUI.create(`http://localhost:${connector.config.infrastructure.httpServer.port}`, connector.config.infrastructure.httpServer.apiKey)
+    await tui.run()
   }
 }
