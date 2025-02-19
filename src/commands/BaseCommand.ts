@@ -27,8 +27,13 @@ export abstract class BaseCommand<TArgs> {
 
     try {
       await this.runInternal(args)
-    } catch (e) {
-      console.error(e)
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        console.error(chalk.red(e.message))
+      } else {
+        console.error(e)
+      }
+
       this._processManager.pm2.disconnect()
       process.exit(1)
     } finally {

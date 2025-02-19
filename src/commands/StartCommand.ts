@@ -32,8 +32,7 @@ export class StartCommand extends BaseCommand<never> {
     }
 
     if (!this._config.existsConnector(args.id)) {
-      console.error(`A connector with the id '${chalk.red(args.id)}' does not exist.`)
-      process.exit(1)
+      throw new Error(`A connector with the id '${args.id}' does not exist.`)
     }
 
     await this.start(args.id)

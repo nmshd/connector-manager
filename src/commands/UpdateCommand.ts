@@ -38,8 +38,7 @@ export class UpdateCommand extends BaseCommand<never> {
     if (typeof args.version !== "undefined") {
       const existsResponse = await this._releaseManager.exists(args.version)
       if (existsResponse) {
-        console.error(existsResponse)
-        process.exit(1)
+        throw new Error(existsResponse)
       }
     }
 
@@ -54,16 +53,14 @@ export class UpdateCommand extends BaseCommand<never> {
     }
 
     if (!this._config.existsConnector(args.id)) {
-      console.error(`A connector with the id ${chalk.red(args.id)} does not exist.`)
-      process.exit(1)
+      throw new Error(`A connector with the id '${args.id}' does not exist.`)
     }
 
     if (typeof args.port !== "undefined") {
       const connectorUsingPort = this._config.connectors.find((c) => c.config.infrastructure.httpServer.port === args.port)
 
       if (connectorUsingPort) {
-        console.error(`Port ${chalk.red(args.port)} is already in use by the connector ${chalk.red(connectorUsingPort.id)}.`)
-        process.exit(1)
+        throw new Error(`Port ${args.port} is already in use by the connector ${connectorUsingPort.id}.`)
       }
     }
 

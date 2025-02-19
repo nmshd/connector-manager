@@ -1,4 +1,3 @@
-import chalk from "chalk"
 import fs from "fs/promises"
 import os from "os"
 import { Tail } from "tail"
@@ -23,8 +22,7 @@ export class LogsCommand extends BaseCommand<never> {
 
   protected async runInternal(args: LogsCommandArgs): Promise<void> {
     if (!this._config.existsConnector(args.id)) {
-      console.error(`A connector with the id '${chalk.red(args.id)}' does not exist.`)
-      process.exit(1)
+      throw new Error(`A connector with the id '${args.id}' does not exist.`)
     }
 
     const connector = this._config.getConnector(args.id)
@@ -55,8 +53,7 @@ export class LogsCommand extends BaseCommand<never> {
     })
 
     tail.on("error", () => {
-      console.log("An error occurred watching the log file.")
-      process.exit(1)
+      throw new Error("An error occurred watching the log file.")
     })
 
     tail.watch()

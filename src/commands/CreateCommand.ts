@@ -58,15 +58,13 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
   protected async runInternal(args: CreateCommandArgs): Promise<void> {
     const existsResponse = await this._releaseManager.exists(args.version)
     if (existsResponse) {
-      console.error(existsResponse)
-      process.exit(1)
+      throw new Error(existsResponse)
     }
 
     const id = args.id.trim()
 
     if (this._config.existsConnector(id)) {
-      console.error(`A connector with the id ${chalk.red(id)} already exists.`)
-      process.exit(1)
+      throw new Error(`A connector with the id ${id} already exists.`)
     }
 
     console.log("Creating connector...")

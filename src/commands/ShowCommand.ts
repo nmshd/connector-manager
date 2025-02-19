@@ -1,4 +1,3 @@
-import chalk from "chalk"
 import * as yargs from "yargs"
 import { BaseCommand } from "./BaseCommand.js"
 
@@ -14,8 +13,7 @@ export class ShowCommand extends BaseCommand<ShowCommandArgs> {
 
   protected async runInternal(args: ShowCommandArgs): Promise<void> {
     if (!this._config.existsConnector(args.id)) {
-      console.error(`A connector with the id '${chalk.red(args.id)}' does not exist.`)
-      process.exit(1)
+      throw new Error(`A connector with the id '${args.id}' does not exist.`)
     }
 
     const connector = this._config.getConnector(args.id)
