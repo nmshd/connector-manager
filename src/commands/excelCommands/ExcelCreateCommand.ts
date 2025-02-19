@@ -1,5 +1,6 @@
 import fs from "fs"
 import path from "path"
+import prompt from "prompts"
 import * as yargs from "yargs"
 import { getRootDir as getDistDirectory } from "../../getRootDir.js"
 import { BaseCommand } from "../BaseCommand.js"
@@ -27,9 +28,31 @@ export class ExcelCreateCommand extends BaseCommand<ExcelCreateCommandArgs> {
     const templateFilePath = path.join(distDirectory, "..", ExcelCreateCommand.TEMPLATE_FILE_NAME)
     const outFileDirectory = path.dirname(args.out)
 
+    args.out = path.resolve(args.out) // make the potentially relative path absolute to improve output readability
+
     await fs.promises.mkdir(outFileDirectory, { recursive: true })
 
-    await fs.promises.copyFile(templateFilePath, args.out)
+    if (fs.existsSync(args.out)) {
+      const answer = await prompt({
+        name: "confirm",
+        type: "confirm",
+        message: `There is already a file named '${args.out}'. Do you want to replace it?`,
+        initial: false,
+      })
+
+      if (!answer.confirm) {
+        console.log("Aborted.")
+        return
+      }
+    }
+
+    try {
+      await fs.promises.copyFile(templateFilePath, args.out)
+    } catch {
+      console.log("There was an error copying the file.")
+      return
+    }
+
     console.log(`Excel file created at: ${args.out}`)
   }
 }
