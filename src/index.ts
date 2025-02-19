@@ -50,4 +50,5 @@ await yargs(hideBin(process.argv))
   .strict()
   .version(false)
   .help()
+  .completion()
   .alias("help", "h").argv
