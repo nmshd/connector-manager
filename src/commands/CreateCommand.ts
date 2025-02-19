@@ -5,7 +5,7 @@ import { BaseCommand } from "./BaseCommand.js"
 
 export interface CreateCommandArgs {
   id: string
-  version: string
+  version?: string
   dbConnectionString?: string
   baseUrl?: string
   clientId?: string
@@ -56,6 +56,8 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
       )
 
   protected async runInternal(args: CreateCommandArgs): Promise<void> {
+    args.version ??= await this._releaseManager.getLatestVersionNumber()
+
     const existsResponse = await this._releaseManager.exists(args.version)
     if (existsResponse) {
       throw new Error(existsResponse)
