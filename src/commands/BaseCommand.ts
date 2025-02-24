@@ -76,7 +76,10 @@ export abstract class BaseCommand<TArgs> {
       connector.config.infrastructure.httpServer.apiKey,
     ]
 
-    if (!status?.pid) return connectorInfo
+    if (!status?.pid) {
+      connectorInfo.push("<unknown>")
+      return connectorInfo
+    }
 
     try {
       const result = await connector.sdk.attributes.getOwnRepositoryAttributes({ "content.value.@type": "DisplayName", onlyLatestVersions: true })
