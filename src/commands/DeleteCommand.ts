@@ -31,7 +31,7 @@ export class DeleteCommand extends BaseCommand<never> {
       if (!answer.confirm) process.exit(0)
     }
 
-    await this._processManager.delete(args.id)
+    await this._processManager.stop(args.id)
 
     this._config.deleteConnector(args.id)
     await this._config.save()

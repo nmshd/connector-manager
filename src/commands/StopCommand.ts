@@ -20,7 +20,7 @@ export class StopCommand extends BaseCommand<never> {
   protected async runInternal(args: StopCommandArgs): Promise<void> {
     if ("all" in args) {
       console.log("Stopping all connectors...")
-      await this._processManager.delete("all")
+      await this._processManager.stop("all")
       console.log("All connectors stopped.")
 
       return
@@ -31,7 +31,7 @@ export class StopCommand extends BaseCommand<never> {
     }
 
     console.log(`Stopping connector ${chalk.green(args.id)}...`)
-    await this._processManager.delete(args.id)
+    await this._processManager.stop(args.id)
     console.log(`Connector ${chalk.green(args.id)} stopped.`)
   }
 }
