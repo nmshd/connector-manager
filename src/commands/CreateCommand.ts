@@ -6,6 +6,7 @@ import { BaseCommand } from "./BaseCommand.js"
 export interface CreateCommandArgs {
   id: string
   version?: string
+  port?: number
   dbConnectionString?: string
   baseUrl?: string
   clientId?: string
@@ -26,6 +27,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
         description:
           "The version of the connector to create. You can find a list of available versions on https://github.com/nmshd/connector/releases. If none is passed, the latest version is used.",
       })
+      .option("port", { type: "number", description: "The port the connector should listen on. Defaults to 3000." })
       .option("db-connection-string", {
         type: "string",
         description: "The connection string for the database the connector should use. Defaults to the value you specified during 'cman init'.",
@@ -51,7 +53,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
       })
       .example("$0 --id connector1", "Create a new connector with the minimal number of parameters.")
       .example(
-        "$0 --id connector1 --version v6.14.3 --db-connection-string mongodb://localhost:27017 --base-url https://backbone.example.com --client-id myClientId --client-secret myClientSecret",
+        "$0 --id connector1 --version v6.14.3 --port 9000 --db-connection-string mongodb://localhost:27017 --base-url https://backbone.example.com --client-id myClientId --client-secret myClientSecret",
         "Create a new connector with all possible parameters."
       )
 
@@ -71,7 +73,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
 
     console.log("Creating connector...")
 
-    const connector = this._config.addConnector(args.version, id, args.dbConnectionString, args.baseUrl, args.clientId, args.clientSecret)
+    const connector = this._config.addConnector(args.version, id, args.dbConnectionString, args.baseUrl, args.clientId, args.clientSecret, args.port)
     await this._config.save()
 
     await this._processManager.start(id)
