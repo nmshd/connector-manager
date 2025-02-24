@@ -57,8 +57,16 @@ export class ProcessManager {
   public async stop(id: string) {
     await new Promise<void>((resolve, reject) => {
       this.#pm2.delete(id, (err: any) => {
-        if (!(err?.message as String | undefined)?.endsWith("not found")) reject(err)
-        else resolve()
+        if (err) {
+          if (err.message !== undefined && (err.message as String).endsWith("not found")) {
+            // if there is no process with the given id, there is no need to delete it, so we consider it a success
+            resolve()
+          } else {
+            reject(err)
+          }
+        } else {
+          resolve()
+        }
       })
     })
   }
