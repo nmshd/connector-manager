@@ -84,13 +84,23 @@ export abstract class BaseCommand<TArgs> {
     try {
       const result = await connector.sdk.attributes.getOwnRepositoryAttributes({ "content.value.@type": "DisplayName", onlyLatestVersions: true })
       if (result.isError) {
+        logDisplayNameFetchError(result.error.message)
         connectorInfo.push(chalk.red("Error"))
       } else {
         const displayNames = result.result.map((attribute) => (attribute.content.value as DisplayNameJSON).value)
         connectorInfo.push(displayNames.join(", "))
       }
-    } catch (_) {
+    } catch (error: any) {
+      if (error?.message) {
+        logDisplayNameFetchError(error?.message)
+      } else {
+        logDisplayNameFetchError(JSON.stringify(error))
+      }
       connectorInfo.push(chalk.red("Error"))
+    }
+
+    function logDisplayNameFetchError(errorMessage: string) {
+      console.error(`An error occurred while fetching the display name(s) for connector ${connector.id}: "${errorMessage}"`)
     }
 
     return connectorInfo
