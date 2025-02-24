@@ -3,12 +3,6 @@ import chalk from "chalk"
 import { ConnectorDefinition } from "./Config.js"
 
 export async function setDisplayName(connector: ConnectorDefinition, displayName: string) {
-  const isHealthy = await waitForConnectorToBeHealthy(connector)
-  if (!isHealthy) {
-    console.error(`The connector ${chalk.red(connector.id)} did not become healthy. Could not set display name.`)
-    return
-  }
-
   const existingDisplayNames = await connector.sdk.attributes.getOwnRepositoryAttributes({
     "content.value.@type": "DisplayName",
     onlyLatestVersions: true,

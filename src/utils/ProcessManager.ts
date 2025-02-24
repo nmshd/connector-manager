@@ -57,7 +57,7 @@ export class ProcessManager {
   public async delete(id: string) {
     await new Promise<void>((resolve, reject) => {
       this.#pm2.delete(id, (err: any) => {
-        if (!(err.message as String | undefined)?.endsWith("not found")) reject(err)
+        if (!(err?.message as String | undefined)?.endsWith("not found")) reject(err)
         else resolve()
       })
     })

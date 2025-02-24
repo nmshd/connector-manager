@@ -1,6 +1,6 @@
 import chalk from "chalk"
 import * as yargs from "yargs"
-import { setDisplayName } from "../utils/connectorUtils.js"
+import { setDisplayName, waitForConnectorToBeHealthy } from "../utils/connectorUtils.js"
 import { BaseCommand } from "./BaseCommand.js"
 
 export interface CreateCommandArgs {
@@ -79,6 +79,8 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
     await this._processManager.start(id)
 
     console.log(`Successfully created the connector ${chalk.green(id)}.\n`)
+
+    await waitForConnectorToBeHealthy(connector)
 
     if (typeof args.displayName !== "undefined") await setDisplayName(connector, args.displayName.trim())
 

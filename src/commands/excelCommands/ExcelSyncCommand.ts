@@ -1,6 +1,6 @@
 import xlsx from "node-xlsx"
 import * as yargs from "yargs"
-import { setDisplayName } from "../../utils/connectorUtils.js"
+import { setDisplayName, waitForConnectorToBeHealthy } from "../../utils/connectorUtils.js"
 import { BaseCommand } from "../BaseCommand.js"
 
 export interface ExcelSyncCommandArgs {
@@ -67,6 +67,8 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     await this._config.save()
 
     await this._processManager.start(connector.id)
+
+    await waitForConnectorToBeHealthy(connector)
 
     if (parameters["organization-display-name"]) await setDisplayName(connector, parameters["organization-display-name"].trim())
   }

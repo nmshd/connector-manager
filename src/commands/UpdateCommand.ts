@@ -1,6 +1,6 @@
 import chalk from "chalk"
 import * as yargs from "yargs"
-import { setDisplayName } from "../utils/connectorUtils.js"
+import { setDisplayName, waitForConnectorToBeHealthy } from "../utils/connectorUtils.js"
 import { BaseCommand } from "./BaseCommand.js"
 
 export type UpdateCommandArgs = { version?: string; rotateApiKey?: boolean; port?: number; start: boolean; displayName?: string } & ({ id: string } | { all: true })
@@ -45,6 +45,7 @@ export class UpdateCommand extends BaseCommand<never> {
     if ("all" in args) {
       for (const connector of this._config.connectors) {
         await this.update(connector.id, args)
+        await waitForConnectorToBeHealthy(connector)
       }
 
       await this.showInstances(this._config.connectors)
@@ -66,8 +67,11 @@ export class UpdateCommand extends BaseCommand<never> {
 
     await this.update(args.id, args)
 
-    const instance = this._config.getConnector(args.id)
-    await this.showInstances([instance!])
+    const connector = this._config.getConnector(args.id)!
+
+    await waitForConnectorToBeHealthy(connector)
+
+    await this.showInstances([connector])
   }
 
   private async update(id: string, args: UpdateCommandArgs) {
