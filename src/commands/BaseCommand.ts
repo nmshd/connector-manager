@@ -21,7 +21,7 @@ export abstract class BaseCommand<TArgs> {
     }
 
     this._releaseManager = new ReleaseManager()
-    this._processManager = new ProcessManager(config, this._releaseManager)
+    this._processManager = new ProcessManager(config)
     await this._processManager.init()
     this._config = config
 

@@ -4,14 +4,7 @@ import { Config } from "./Config.js"
 import { ReleaseManager } from "./ReleaseManager.js"
 
 export class ProcessManager {
-  readonly #releaseManager: ReleaseManager
-
-  public constructor(
-    private readonly config: Config,
-    releaseManager: ReleaseManager
-  ) {
-    this.#releaseManager = releaseManager
-  }
+  public constructor(private readonly config: Config) {}
 
   readonly #pm2: typeof pm2 = new (pm2 as any).custom()
   public get pm2() {
