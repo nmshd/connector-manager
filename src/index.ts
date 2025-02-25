@@ -23,7 +23,8 @@ import { getAppDir } from "./utils/getAppDir.js"
 
 const noopBuilder = (argv: Argv) => argv
 
-await yargs(hideBin(process.argv))
+let yargsBuilder = yargs(hideBin(process.argv))
+  .scriptName("")
   .command("init", "Initialize the connector manager.", InitCommand.builder, async (args) => await new InitCommand().run(args, false))
   .command("create", "Create a new connector instance", CreateCommand.builder, async (args) => await new CreateCommand().run(args))
   .command("list", "List all connector instances", ListCommand.builder, async (args) => await new ListCommand().run(args))
@@ -51,4 +52,10 @@ await yargs(hideBin(process.argv))
   .version(false)
   .help()
   .completion()
-  .alias("help", "h").argv
+  .alias("help", "h")
+
+if (process.platform === "win32") {
+  yargsBuilder = yargsBuilder.scriptName("")
+}
+
+await yargsBuilder.argv
