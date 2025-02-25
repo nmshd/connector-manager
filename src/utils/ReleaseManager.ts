@@ -1,6 +1,6 @@
 import AdmZip from "adm-zip"
 import chalk from "chalk"
-import { spawn } from "child_process"
+import { spawn, SpawnOptions } from "child_process"
 import fs from "fs"
 import { Octokit } from "octokit"
 import path from "path"
@@ -99,7 +99,12 @@ export class ReleaseManager {
     if (fs.existsSync(path.join(connectorDir, "node_modules"))) return
 
     await new Promise<void>((resolve, reject) => {
-      const npmInstall = spawn("npm", ["install", "--production"], { stdio: "ignore", cwd: connectorDir, env: process.env })
+      const options: SpawnOptions = { stdio: "ignore", cwd: connectorDir, env: process.env }
+
+      // On Windows, npm install will fail if the shell option is not set to true. See https://stackoverflow.com/a/59830014/4046585
+      if (process.platform === "win32") options.shell = true
+
+      const npmInstall = spawn("npm", ["install", "--production"], options)
 
       npmInstall.on("close", (code) => {
         if (code !== 0) {
