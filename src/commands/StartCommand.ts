@@ -1,5 +1,6 @@
 import chalk from "chalk"
 import * as yargs from "yargs"
+import { waitForConnectorToBeHealthy } from "../utils/connectorUtils.js"
 import { BaseCommand } from "./BaseCommand.js"
 
 export type StartCommandArgs = { id: string } | { all: true }
@@ -43,7 +44,10 @@ export class StartCommand extends BaseCommand<never> {
 
     await this._processManager.start(id)
 
-    console.log(`Connector ${chalk.green(id)} started.`)
+    const connector = this._config.getConnector(id)!
+    await waitForConnectorToBeHealthy(connector)
+
+    console.log(`Connector ${chalk.green(id)} is now running.`)
     console.log()
   }
 }
