@@ -3,6 +3,7 @@ import chalk from "chalk"
 import { spawn, SpawnOptions } from "child_process"
 import fs from "fs"
 import { Octokit } from "octokit"
+import ora from "ora"
 import path from "path"
 import { Readable } from "stream"
 import { finished } from "stream/promises"
@@ -27,13 +28,19 @@ export class ReleaseManager {
 
     if (fs.existsSync(path.join(connectorDir, "dist")) && fs.existsSync(path.join(connectorDir, "node_modules"))) return connectorDir
 
+    const spinner = ora("Downloading sources...").start()
+
     const zipPath = await this.downloadConnector(releasesDir, version)
 
     if (!fs.existsSync(connectorDir)) await fs.promises.mkdir(connectorDir, { recursive: true })
 
     this.extractConnector(connectorDir, zipPath)
 
+    spinner.text = "Installing dependencies..."
+
     await this.npmInstallConnector(connectorDir)
+
+    spinner.stop()
 
     return connectorDir
   }
