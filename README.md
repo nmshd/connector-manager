@@ -1,15 +1,13 @@
 # Connector Manager
 
-The purpose of this tool is to manage multiple enmeshed Connector instances on a single machine. It starts a separate Node.js process for each Connector. Each of the Node.js processes opens a new port, under which the Connector's REST API is available.
-
-The tool is controlled via the command line.
+This is a command line tool with the purpose of managing multiple enmeshed Connector instances on a single machine. It starts a separate Node.js process for each Connector. Each of the Node.js processes opens a new port, under which the Connector's REST API is available.
 
 ## Prerequisites
 
 In order to use this tool, the following prerequisites must be met:
 
 - The latest version of [Node.js](https://nodejs.org/en/download) must be installed on the machine.
-- There must be an existing MongoDB instance, which can be used by the Connectors. You can download the community edition of MongoDB from [here](https://www.mongodb.com/try/download/community).
+- There must be an existing MongoDB instance accessible by the Connector instances. You can for example [start MongoDB as a Docker container](https://hub.docker.com/_/mongo/) and expose its port, or install the community edition of MongoDB, which you can find [here](https://www.mongodb.com/try/download/community).
 
 ## Installation
 
@@ -53,17 +51,21 @@ It shows the following output:
 cman <command>
 
 Commands:
-  cman init       Initialize the connector manager.
-  cman create     Create a new connector instance
-  cman list       List all connector instances
-  cman delete     Delete a connector instance
-  cman start      Start one or all connector instance(s)
-  cman stop       Stop one or all connector instance(s)
-  cman restart    Restart one or all connector instance(s)
-  cman logs       Show logs for a connector instance
-  cman update     Update one or all connector instance(s)
-  cman dashboard  show the dashboard
-  cman info       show information about the connector manager
+  cman init        Initialize the connector manager.
+  cman create      Create a new connector instance
+  cman list        List all connector instances
+  cman show        Show information for a specific connector instance
+  cman delete      Delete a connector instance
+  cman start       Start one or all connector instance(s)
+  cman stop        Stop one or all connector instance(s)
+  cman restart     Restart one or all connector instance(s)
+  cman logs        Show logs for a connector instance
+  cman update      Update one or all connector instance(s)
+  cman excel       Commands to synchronize your connector instances with an Excel file.
+  cman dashboard   Show the dashboard
+  cman tui         Start the Connector Terminal UI (TUI) for the connector with the given id.
+  cman info        Show information about the connector manager
+  cman completion  generate completion script
 
 Options:
   -h, --help  Show help                                                [boolean]
