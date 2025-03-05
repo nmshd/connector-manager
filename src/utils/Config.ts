@@ -115,7 +115,6 @@ export class Config {
         platformClientId: platformClientId,
         platformClientSecret: platformClientSecret,
       },
-      logging: { categories: { default: { appenders: ["console"] } } },
       infrastructure: { httpServer: { apiKey: "", port: port } },
     })
 
