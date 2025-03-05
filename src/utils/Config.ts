@@ -213,7 +213,6 @@ export interface ConnectorConfig {
     platformClientId: string
     platformClientSecret: string
   }
-  logging: any
   infrastructure: { httpServer: { apiKey: string; port: number } }
 }
 
