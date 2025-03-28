@@ -43,6 +43,7 @@ export class Config {
     this.platformClientId = json.platformClientId
     this.platformClientSecret = json.platformClientSecret
     this.platformBaseUrl = json.platformBaseUrl
+    this.repository = json.repository || "nmshd/connector"
     this.#connectors = await Promise.all(json.connectors.map(async (c: any) => await ConnectorDefinition.load(c, this.appDir)))
   }
 
@@ -83,6 +84,7 @@ export class Config {
       platformClientId: this.platformClientId,
       platformClientSecret: this.platformClientSecret,
       platformBaseUrl: this.platformBaseUrl,
+      repository: this.repository,
       connectors: this.#connectors.map((c) => c.toJson()),
     }
   }

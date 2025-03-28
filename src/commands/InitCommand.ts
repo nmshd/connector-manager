@@ -38,7 +38,6 @@ export class InitCommand extends BaseCommand<InitCommandArgs> {
         type: "string",
         demandOption: true,
         description: "The repo the connector zips should be fetched from. Defaults to 'nmshd/connector'.",
-        default: "nmshd/connector",
       })
       .example(
         "$0 --db-connection-string mongodb://localhost:27017 --base-url https://backbone.example.com --client-id myClientId --client-secret myClientSecret",
@@ -50,7 +49,7 @@ export class InitCommand extends BaseCommand<InitCommandArgs> {
     this._config.platformBaseUrl = args.baseUrl
     this._config.platformClientId = args.clientId
     this._config.platformClientSecret = args.clientSecret
-    this._config.repository = args.repository
+    if (args.repository) this._config.repository = args.repository
 
     await this._config.save()
   }
