@@ -55,7 +55,7 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     console.log(`Creating connector ${parameters["connector-id"]}...`)
 
     const connector = this._config.addConnector(
-      parameters["connector-version"] ?? defaults["connector-version"] ?? (await this._releaseManager.getLatestVersionNumber()),
+      parameters["connector-version"] ?? defaults["connector-version"] ?? (await this._releaseManager.getLatestVersionNumber(this._config.repository)),
       parameters["connector-id"],
       parameters["connector-db-connection-string"] ?? defaults["connector-db-connection-string"],
       parameters["backbone-base-url"] ?? defaults["backbone-base-url"],

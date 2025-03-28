@@ -36,7 +36,7 @@ export class UpdateCommand extends BaseCommand<never> {
 
   protected async runInternal(args: UpdateCommandArgs): Promise<void> {
     if (typeof args.version !== "undefined") {
-      const existsResponse = await this._releaseManager.exists(args.version)
+      const existsResponse = await this._releaseManager.exists(args.version, this._config.repository)
       if (existsResponse) {
         throw new Error(existsResponse)
       }
