@@ -119,7 +119,6 @@ export class Config {
         platformClientId: platformClientId,
         platformClientSecret: platformClientSecret,
       },
-      logging: { categories: { default: { appenders: ["console"] } } },
       infrastructure: { httpServer: { apiKey: "", port: port } },
     })
 
@@ -217,7 +216,6 @@ export interface ConnectorConfig {
     platformClientId: string
     platformClientSecret: string
   }
-  logging: any
   infrastructure: { httpServer: { apiKey: string; port: number } }
 }
 
