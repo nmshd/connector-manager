@@ -43,6 +43,7 @@ export class Config {
     this.platformClientId = json.platformClientId
     this.platformClientSecret = json.platformClientSecret
     this.platformBaseUrl = json.platformBaseUrl
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     this.repository = json.repository || "nmshd/connector"
     this.#connectors = await Promise.all(json.connectors.map(async (c: any) => await ConnectorDefinition.load(c, this.appDir)))
   }
