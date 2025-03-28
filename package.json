@@ -8,8 +8,8 @@
   "type": "module",
   "main": "index.js",
   "bin": {
-    "connector-manager": "dist/index.js",
-    "cman": "dist/index.js"
+    "cman": "dist/index.js",
+    "connector-manager": "dist/index.js"
   },
   "files": [
     "dist",
@@ -18,9 +18,9 @@
   "scripts": {
     "build": "tsc",
     "lint": "npm run lint:tsc && npm run lint:prettier && npm run lint:eslint",
-    "lint:tsc": "tsc --noEmit",
     "lint:eslint": "eslint --ext .ts ./src",
     "lint:prettier": "prettier --check ./src",
+    "lint:tsc": "tsc --noEmit",
     "start": "tsc --noEmit && node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' src/index.ts",
     "test": "echo 'no test specified'",
     "watch": "node --watch --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' src/index.ts"
