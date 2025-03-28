@@ -1,4 +1,6 @@
 import chalk from "chalk"
+import fs from "fs"
+import path from "path"
 import * as yargs from "yargs"
 import { setDisplayName, waitForConnectorToBeHealthy } from "../utils/connectorUtils.js"
 import { BaseCommand } from "./BaseCommand.js"
@@ -12,6 +14,7 @@ export interface CreateCommandArgs {
   clientId?: string
   clientSecret?: string
   displayName?: string
+  additionalConfigLocation?: string
 }
 
 export class CreateCommand extends BaseCommand<CreateCommandArgs> {
@@ -44,6 +47,10 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
           "The client secret of the OAuth2 client that should be used to authenticate the Connector on the Backbone. Defaults to the value you specified during 'cman init'.",
       })
       .option("display-name", { type: "string", description: "The display name (attribute) of the connector." })
+      .option("additional-config-location", {
+        type: "string",
+        description: "Additional configuration file that should be used when creating the connector. Must be a path to a JSON file.",
+      })
       .check((argv) => {
         if (argv.id.trim().length === 0) return "The id cannot be empty."
         if (argv.id.toLowerCase() !== argv.id) return "The id must be all lowercase."
@@ -73,7 +80,9 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
 
     console.log("Creating connector...")
 
-    const connector = this._config.addConnector(args.version, id, args.dbConnectionString, args.baseUrl, args.clientId, args.clientSecret, args.port)
+    const additionalConfig = await this.readAdditionalConfig(args.additionalConfigLocation)
+
+    const connector = this._config.addConnector(args.version, id, args.dbConnectionString, args.baseUrl, args.clientId, args.clientSecret, args.port, additionalConfig)
     await this._config.save()
 
     await this._processManager.start(id)
@@ -85,5 +94,21 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
     if (typeof args.displayName !== "undefined") await setDisplayName(connector, args.displayName.trim())
 
     await this.showInstances([connector])
+  }
+
+  private async readAdditionalConfig(location?: string): Promise<any> {
+    if (!location) return
+
+    const resolved = path.resolve(location)
+
+    if (!fs.existsSync(resolved)) throw new Error(`The file ${location} does not exist.`)
+
+    const fileContent = await fs.promises.readFile(resolved, "utf-8")
+
+    try {
+      return JSON.parse(fileContent)
+    } catch (_) {
+      throw new Error(`The file ${location} is not a valid JSON`)
+    }
   }
 }
