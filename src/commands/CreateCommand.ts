@@ -58,9 +58,9 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
       )
 
   protected async runInternal(args: CreateCommandArgs): Promise<void> {
-    args.version ??= await this._releaseManager.getLatestVersionNumber()
+    args.version ??= await this._releaseManager.getLatestVersionNumber(this._config.repository)
 
-    const existsResponse = await this._releaseManager.exists(args.version)
+    const existsResponse = await this._releaseManager.exists(args.version, this._config.repository)
     if (existsResponse) {
       throw new Error(existsResponse)
     }

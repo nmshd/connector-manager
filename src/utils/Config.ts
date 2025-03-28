@@ -7,11 +7,12 @@ export class Config {
   public platformClientId = ""
   public platformClientSecret = ""
   public platformBaseUrl = ""
+  public repository = ""
 
   private deletedConnectors: ConnectorDefinition[] = []
 
   public get isInitialized(): boolean {
-    return !!this.dbConnectionString && !!this.platformClientId && !!this.platformClientSecret && !!this.platformBaseUrl
+    return !!this.dbConnectionString && !!this.platformClientId && !!this.platformClientSecret && !!this.platformBaseUrl && !!this.repository
   }
 
   private get configPath(): string {
@@ -42,6 +43,8 @@ export class Config {
     this.platformClientId = json.platformClientId
     this.platformClientSecret = json.platformClientSecret
     this.platformBaseUrl = json.platformBaseUrl
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    this.repository = json.repository || "nmshd/connector"
     this.#connectors = await Promise.all(json.connectors.map(async (c: any) => await ConnectorDefinition.load(c, this.appDir)))
   }
 
@@ -82,6 +85,7 @@ export class Config {
       platformClientId: this.platformClientId,
       platformClientSecret: this.platformClientSecret,
       platformBaseUrl: this.platformBaseUrl,
+      repository: this.repository,
       connectors: this.#connectors.map((c) => c.toJson()),
     }
   }

@@ -11,26 +11,24 @@ import { ReadableStream } from "stream/web"
 import { getAppDir } from "./getAppDir.js"
 
 export class ReleaseManager {
-  public async getLatestVersionNumber(): Promise<string> {
+  public async getLatestVersionNumber(repository: string): Promise<string> {
     const octokit = new Octokit()
 
-    const { data: release } = await octokit.rest.repos.getLatestRelease({
-      owner: "nmshd",
-      repo: "connector",
-    })
+    const [owner, repo] = repository.split("/")
+    const { data: release } = await octokit.rest.repos.getLatestRelease({ owner, repo })
 
     return release.tag_name
   }
 
-  public async provideRelease(version: string): Promise<string> {
-    const releasesDir = path.join(getAppDir(), "releases")
+  public async provideRelease(version: string, repository: string): Promise<string> {
+    const releasesDir = path.join(getAppDir(), "releases", repository)
     const connectorDir = path.join(releasesDir, `connector-${version}`)
 
     if (fs.existsSync(path.join(connectorDir, "dist")) && fs.existsSync(path.join(connectorDir, "node_modules"))) return connectorDir
 
     const spinner = ora("Downloading sources...").start()
 
-    const zipPath = await this.downloadConnector(releasesDir, version)
+    const zipPath = await this.downloadConnector(releasesDir, version, repository)
 
     if (!fs.existsSync(connectorDir)) await fs.promises.mkdir(connectorDir, { recursive: true })
 
@@ -45,11 +43,12 @@ export class ReleaseManager {
     return connectorDir
   }
 
-  public async exists(version: string): Promise<string | undefined> {
-    const connectorDir = path.join(getAppDir(), "releases", `connector-${version}`, "dist")
+  public async exists(version: string, repository: string): Promise<string | undefined> {
+    const releasesDir = path.join(getAppDir(), "releases", repository)
+    const connectorDir = path.join(releasesDir, `connector-${version}`, "dist")
     if (fs.existsSync(connectorDir)) return
 
-    const release = await this.getGithubRelease(version)
+    const release = await this.getGithubRelease(version, repository)
 
     if (!release) return `The release ${chalk.red(version)} does not exist.`
 
@@ -58,15 +57,12 @@ export class ReleaseManager {
     }
   }
 
-  private async getGithubRelease(version: string) {
+  private async getGithubRelease(version: string, repository: string) {
     try {
       const octokit = new Octokit()
 
-      const release = await octokit.rest.repos.getReleaseByTag({
-        owner: "nmshd",
-        repo: "connector",
-        tag: version,
-      })
+      const [owner, repo] = repository.split("/")
+      const release = await octokit.rest.repos.getReleaseByTag({ owner, repo, tag: version })
 
       return release.data
     } catch (_) {
@@ -74,13 +70,13 @@ export class ReleaseManager {
     }
   }
 
-  private async downloadConnector(zipDir: string, version: string) {
+  private async downloadConnector(zipDir: string, version: string, repository: string) {
     if (!fs.existsSync(zipDir)) await fs.promises.mkdir(zipDir, { recursive: true })
 
     const zipPath = path.join(zipDir, `connector-${version}.zip`)
     if (fs.existsSync(zipPath)) return zipPath
 
-    const release = await this.getGithubRelease(version)
+    const release = await this.getGithubRelease(version, repository)
     if (!release?.assets) throw new Error("no release / assets found")
 
     const zipAsset = release.assets.find((asset) => asset.name.endsWith(".zip") && asset.state === "uploaded")

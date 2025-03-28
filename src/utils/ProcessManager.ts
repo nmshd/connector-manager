@@ -34,7 +34,7 @@ export class ProcessManager {
 
     if (!connectorFromConfig) throw new Error("Connector not found in config")
 
-    const connectorPath = await new ReleaseManager().provideRelease(connectorFromConfig.version)
+    const connectorPath = await new ReleaseManager().provideRelease(connectorFromConfig.version, this.config.repository)
 
     await new Promise<void>((resolve, reject) => {
       this.#pm2.start(
