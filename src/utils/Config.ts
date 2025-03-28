@@ -7,11 +7,12 @@ export class Config {
   public platformClientId = ""
   public platformClientSecret = ""
   public platformBaseUrl = ""
+  public repository = ""
 
   private deletedConnectors: ConnectorDefinition[] = []
 
   public get isInitialized(): boolean {
-    return !!this.dbConnectionString && !!this.platformClientId && !!this.platformClientSecret && !!this.platformBaseUrl
+    return !!this.dbConnectionString && !!this.platformClientId && !!this.platformClientSecret && !!this.platformBaseUrl && !!this.repository
   }
 
   private get configPath(): string {
