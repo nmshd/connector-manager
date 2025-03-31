@@ -49,7 +49,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
       .option("additional-configuration", {
         alias: "c",
         type: "string",
-        description: "Additional configuration for the connector. Use 'key=value' pairs separated by semicolons. Nested keys can be specified using '.' or '__'.",
+        description: "Additional configuration for the connector. Use 'key=value' pairs separated by semicolons. Nested keys can be specified using ':' or '__'.",
       })
       .check((argv) => {
         if (argv.id.trim().length === 0) return "The id cannot be empty."
