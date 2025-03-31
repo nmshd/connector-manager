@@ -11,8 +11,16 @@ export function parseConfigString(configuration?: string): any {
     const keys = keyPart.split(/:|__/)
 
     const object = keys.slice(0, -1).reduce((acc, key) => (acc[key] ??= {}), config)
-    object[keys.at(-1)!] = value
+    object[keys.at(-1)!] = parseString(value)
   }
 
   return config
+}
+
+function parseString(value: string) {
+  try {
+    return JSON.parse(value)
+  } catch (_) {
+    return value
+  }
 }
