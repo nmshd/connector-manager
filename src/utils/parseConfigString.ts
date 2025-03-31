@@ -17,7 +17,7 @@ export function parseConfigString(configuration?: string): any {
   return config
 }
 
-function parseString(value: string) {
+export function parseString(value: string) {
   try {
     return JSON.parse(value)
   } catch (_) {

@@ -2,7 +2,7 @@ import _ from "lodash"
 import xlsx from "node-xlsx"
 import * as yargs from "yargs"
 import { waitForConnectorToBeHealthy } from "../../utils/connectorUtils.js"
-import { parseConfigString } from "../../utils/parseConfigString.js"
+import { parseString } from "../../utils/parseConfigString.js"
 import { BaseCommand } from "../BaseCommand.js"
 
 export interface ExcelSyncCommandArgs {
@@ -24,11 +24,7 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
 
     for (const connectorProperties of data.connectors) {
       if (!this._config.existsConnector(connectorProperties["connector-id"])) {
-        const additionalConfiguration = _.defaultsDeep(
-          {},
-          parseConfigString(data.defaults["additional-configuration"]),
-          parseConfigString(connectorProperties["additional-configuration"])
-        )
+        const additionalConfiguration = _.defaultsDeep({}, data.defaults.additionalConfiguration, connectorProperties.additionalConfiguration)
 
         await this.createNewConnector(connectorProperties, data.defaults, additionalConfiguration)
         console.log(`Connector ${connectorProperties["connector-id"]} created.`)
@@ -94,7 +90,10 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
         if (key) {
           obj[key as keyof Parameters] = row[index]?.toString()
         } else {
-          throw new Error(`There is no matching parameter for the column '${header}'`)
+          const keys = header.split(/:|__/)
+
+          const object = keys.slice(0, -1).reduce((acc, key) => (acc[key] ??= {}), obj.additionalConfiguration)
+          object[keys.at(-1)!] = parseString(row[index]?.toString())
         }
       }
 
@@ -117,7 +116,10 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
       if (key) {
         defaultValues[key as keyof DefaultValues] = row[index]
       } else {
-        throw new Error(`There is no matching parameter for the column '${header}'`)
+        const keys = header.split(/:|__/)
+
+        const object = keys.slice(0, -1).reduce((acc, key) => (acc[key] ??= {}), defaultValues.additionalConfiguration)
+        object[keys.at(-1)!] = parseString(row[index]?.toString())
       }
     }
 
@@ -144,7 +146,7 @@ class Parameters {
   public "backbone-base-url"?: string
   public "backbone-client-id"?: string
   public "backbone-client-secret"?: string
-  public "additional-configuration"?: string
+  public additionalConfiguration: any = {}
 }
 
 class DefaultValues {
@@ -153,5 +155,5 @@ class DefaultValues {
   public "backbone-base-url"?: string
   public "backbone-client-id"?: string
   public "backbone-client-secret"?: string
-  public "additional-configuration"?: string
+  public additionalConfiguration: any = {}
 }
