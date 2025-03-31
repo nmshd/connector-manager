@@ -83,7 +83,7 @@ cman create --help
 
 The Connector Manager automatically generates a configuration file for each created Connector instance, filled with the default values you provided during the initialization process.
 
-If you want to extend this generated configuration file with additional values, you can do so by providing the flag `additional-configuration` either in the create command or the excel sync.
+If you want to extend this generated configuration file with additional values, you can do so by providing the flag `additional-configuration` in the create command.
 
 This flag can be used to configure the connector (e.g. enable / disable modules). If you want to disable the coreHttpApi module, you can use the following command:
 
@@ -103,6 +103,12 @@ When running the above command the cman generated config is extended with the fo
   },
 }
 ```
+
+To archieve the same result with the excel sync just add the following line to the excel sheet:
+
+| id        | ... | modules**coreHttpApi**enabled |
+| --------- | --- | ----------------------------- |
+| {your-id} | ... | false                         |
 
 ## Update the Connector Manager
 
