@@ -37,6 +37,8 @@ It requires the following parameters:
 
 Each of these values represents the default value for the Connectors you create. You can override them when creating a new Connector.
 
+If you want to fetch the connector from a different repository, you can use the `--repository` parameter. If omitted the default value is `nmshd/connector`. This repository can only be changed during the initialization process and not on a per-connector basis.
+
 ### Available commands
 
 A list of all available commands can be displayed by running the following command:
