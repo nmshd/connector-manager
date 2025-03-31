@@ -94,6 +94,7 @@ export class Config {
   public addConnector(
     version: string,
     id: string,
+    description?: string,
     dbConnectionString?: string,
     platformBaseUrl?: string,
     platformClientId?: string,
@@ -128,7 +129,7 @@ export class Config {
       additionalConfiguration
     )
 
-    const connector = new ConnectorDefinition(this.appDir, id, version, config)
+    const connector = new ConnectorDefinition(this.appDir, id, description, version, config)
 
     connector.rotateApiKey()
 
@@ -168,6 +169,7 @@ export class ConnectorDefinition {
   public constructor(
     private readonly appDir: string,
     public readonly id: string,
+    public description: string | undefined,
     public version: string,
     public config: ConnectorConfig
   ) {}
@@ -195,7 +197,7 @@ export class ConnectorDefinition {
     const configPath = this.buildFilePath(appDir, json.id, "config.json")
     const configContent = await fs.promises.readFile(configPath)
     const configJson = JSON.parse(configContent.toString())
-    return new ConnectorDefinition(appDir, json.id, json.version, configJson)
+    return new ConnectorDefinition(appDir, json.id, json.description, json.version, configJson)
   }
 
   public rotateApiKey(): void {
@@ -206,6 +208,7 @@ export class ConnectorDefinition {
     return {
       version: this.version,
       id: this.id,
+      description: this.description,
     }
   }
 

@@ -1,18 +1,18 @@
 import chalk from "chalk"
 import * as yargs from "yargs"
-import { setDisplayName, waitForConnectorToBeHealthy } from "../utils/connectorUtils.js"
+import { waitForConnectorToBeHealthy } from "../utils/connectorUtils.js"
 import { parseConfigString } from "../utils/parseConfigString.js"
 import { BaseCommand } from "./BaseCommand.js"
 
 export interface CreateCommandArgs {
   id: string
+  description?: string
   version?: string
   port?: number
   dbConnectionString?: string
   baseUrl?: string
   clientId?: string
   clientSecret?: string
-  displayName?: string
   additionalConfiguration?: string
 }
 
@@ -24,6 +24,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
         demandOption: true,
         description: "The id of the connector to create. Must be unique, contain only lowercase characters and must not contain any whitespace characters.",
       })
+      .option("description", { type: "string", description: "The description of the connector to create. This is only used for display purposes." })
       .option("version", {
         type: "string",
         description:
@@ -45,7 +46,6 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
         description:
           "The client secret of the OAuth2 client that should be used to authenticate the Connector on the Backbone. Defaults to the value you specified during 'cman init'.",
       })
-      .option("display-name", { type: "string", description: "The display name (attribute) of the connector." })
       .option("additional-configuration", {
         alias: "c",
         type: "string",
@@ -55,7 +55,6 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
         if (argv.id.trim().length === 0) return "The id cannot be empty."
         if (argv.id.toLowerCase() !== argv.id) return "The id must be all lowercase."
         if (/\s/.test(argv.id)) return "The id must not contain any whitespace characters."
-        if (argv["display-name"]?.trim().length === 0) return "The display name cannot be empty."
         return true
       })
       .example("$0 --id connector1", "Create a new connector with the minimal number of parameters.")
@@ -82,7 +81,17 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
 
     const additionalConfig = await parseConfigString(args.additionalConfiguration)
 
-    const connector = this._config.addConnector(args.version, id, args.dbConnectionString, args.baseUrl, args.clientId, args.clientSecret, args.port, additionalConfig)
+    const connector = this._config.addConnector(
+      args.version,
+      id,
+      args.description,
+      args.dbConnectionString,
+      args.baseUrl,
+      args.clientId,
+      args.clientSecret,
+      args.port,
+      additionalConfig
+    )
     await this._config.save()
 
     await this._processManager.start(id)
@@ -90,8 +99,6 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
     console.log(`Successfully created the connector ${chalk.green(id)}.\n`)
 
     await waitForConnectorToBeHealthy(connector)
-
-    if (typeof args.displayName !== "undefined") await setDisplayName(connector, args.displayName.trim())
 
     await this.showInstances([connector])
   }

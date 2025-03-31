@@ -1,7 +1,7 @@
 import _ from "lodash"
 import xlsx from "node-xlsx"
 import * as yargs from "yargs"
-import { setDisplayName, waitForConnectorToBeHealthy } from "../../utils/connectorUtils.js"
+import { waitForConnectorToBeHealthy } from "../../utils/connectorUtils.js"
 import { parseConfigString } from "../../utils/parseConfigString.js"
 import { BaseCommand } from "../BaseCommand.js"
 
@@ -65,6 +65,7 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     const connector = this._config.addConnector(
       parameters["connector-version"] ?? defaults["connector-version"] ?? (await this._releaseManager.getLatestVersionNumber(this._config.repository)),
       parameters["connector-id"],
+      parameters["connector-description"]?.trim(),
       parameters["connector-db-connection-string"] ?? defaults["connector-db-connection-string"],
       parameters["backbone-base-url"] ?? defaults["backbone-base-url"],
       parameters["backbone-client-id"] ?? defaults["backbone-client-id"],
@@ -78,8 +79,6 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     await this._processManager.start(connector.id)
 
     await waitForConnectorToBeHealthy(connector)
-
-    if (parameters["organization-display-name"]) await setDisplayName(connector, parameters["organization-display-name"].trim())
   }
 
   private parseParameters(array: string[][]): Parameters[] {
@@ -138,10 +137,10 @@ class ExcelData {
 
 class Parameters {
   public "connector-id" = ""
+  public "connector-description"?: string
   public "connector-db-connection-string"?: string
   public "connector-port"?: string
   public "connector-version"? = ""
-  public "organization-display-name"?: string
   public "backbone-base-url"?: string
   public "backbone-client-id"?: string
   public "backbone-client-secret"?: string
