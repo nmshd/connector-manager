@@ -1,6 +1,7 @@
 import chalk from "chalk"
 import * as yargs from "yargs"
 import { setDisplayName, waitForConnectorToBeHealthy } from "../utils/connectorUtils.js"
+import { parseConfigString } from "../utils/parseConfigString.js"
 import { BaseCommand } from "./BaseCommand.js"
 
 export interface CreateCommandArgs {
@@ -79,7 +80,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
 
     console.log("Creating connector...")
 
-    const additionalConfig = await this.parseAdditionalConfiguration(args.additionalConfiguration)
+    const additionalConfig = await parseConfigString(args.additionalConfiguration)
 
     const connector = this._config.addConnector(args.version, id, args.dbConnectionString, args.baseUrl, args.clientId, args.clientSecret, args.port, additionalConfig)
     await this._config.save()
@@ -93,24 +94,5 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
     if (typeof args.displayName !== "undefined") await setDisplayName(connector, args.displayName.trim())
 
     await this.showInstances([connector])
-  }
-
-  private parseAdditionalConfiguration(configuration?: string): any {
-    if (!configuration) return
-
-    const configFields = configuration.split(";")
-
-    const config: any = {}
-    for (const field of configFields) {
-      const [keyPart, value] = field.split("=")
-      if (!keyPart || !value) throw new Error(`Invalid additional configuration format. Expected 'key=value' pairs, but got '${field}'`)
-
-      const keys = keyPart.split(/\.|__/)
-
-      const object = keys.slice(0, -1).reduce((acc, key) => (acc[key] ??= {}), config)
-      object[keys.at(-1)!] = value
-    }
-
-    return config
   }
 }
