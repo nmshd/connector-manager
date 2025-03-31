@@ -1,4 +1,3 @@
-import { DisplayNameJSON } from "@nmshd/content"
 import chalk from "chalk"
 import { ProcessDescription } from "pm2"
 import { table } from "table"
@@ -45,27 +44,26 @@ export abstract class BaseCommand<TArgs> {
   protected abstract runInternal(args: TArgs): Promise<void> | void
 
   protected async showInstances(connectors: ConnectorDefinition[]): Promise<void> {
-    const tableEntries: (string | number)[][] = [["ID", "Version", "Status", "CPU", "Memory", "Uptime", "PID", "Port", "Api Key", "Display Name(s)"]]
+    const tableEntries: (string | number)[][] = [["ID", "Description", "Version", "Status", "CPU", "Memory", "Uptime", "PID", "Port", "Api Key"]]
 
     const statuses = await this._processManager.status(connectors.length === 1 ? connectors[0].id : "all")
 
-    const promises = connectors.map((connector) =>
+    const entries = connectors.map((connector) =>
       this.getConnectorInfo(
         connector,
         statuses.find((status) => status.name === connector.id)
       )
     )
 
-    const entries = await Promise.all(promises)
-
     tableEntries.push(...entries)
 
     console.log(table(tableEntries))
   }
 
-  private async getConnectorInfo(connector: ConnectorDefinition, status: ProcessDescription | undefined): Promise<(string | number)[]> {
+  private getConnectorInfo(connector: ConnectorDefinition, status: ProcessDescription | undefined): (string | number)[] {
     const connectorInfo = [
       connector.id,
+      connector.description ?? "",
       connector.version,
       status?.pid ? chalk.green("running") : chalk.red("stopped"),
       typeof status?.monit?.cpu !== "undefined" ? `${status.monit.cpu}%` : "",
@@ -75,33 +73,6 @@ export abstract class BaseCommand<TArgs> {
       connector.config.infrastructure.httpServer.port.toString(),
       connector.config.infrastructure.httpServer.apiKey,
     ]
-
-    if (!status?.pid) {
-      connectorInfo.push("<unknown>")
-      return connectorInfo
-    }
-
-    try {
-      const result = await connector.sdk.attributes.getOwnRepositoryAttributes({ "content.value.@type": "DisplayName", onlyLatestVersions: true })
-      if (result.isError) {
-        logDisplayNameFetchError(result.error.message)
-        connectorInfo.push(chalk.red("Error"))
-      } else {
-        const displayNames = result.result.map((attribute) => (attribute.content.value as DisplayNameJSON).value)
-        connectorInfo.push(displayNames.join(", "))
-      }
-    } catch (error: any) {
-      if (error?.message) {
-        logDisplayNameFetchError(error?.message)
-      } else {
-        logDisplayNameFetchError(JSON.stringify(error))
-      }
-      connectorInfo.push(chalk.red("Error"))
-    }
-
-    function logDisplayNameFetchError(errorMessage: string) {
-      console.error(`An error occurred while fetching the display name(s) for connector ${connector.id}: "${errorMessage}"`)
-    }
 
     return connectorInfo
   }
