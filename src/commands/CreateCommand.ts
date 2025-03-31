@@ -1,6 +1,7 @@
 import chalk from "chalk"
 import * as yargs from "yargs"
 import { waitForConnectorToBeHealthy } from "../utils/connectorUtils.js"
+import { parseConfigString } from "../utils/parseConfigString.js"
 import { BaseCommand } from "./BaseCommand.js"
 
 export interface CreateCommandArgs {
@@ -12,6 +13,7 @@ export interface CreateCommandArgs {
   baseUrl?: string
   clientId?: string
   clientSecret?: string
+  additionalConfiguration?: string[]
 }
 
 export class CreateCommand extends BaseCommand<CreateCommandArgs> {
@@ -44,6 +46,11 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
         description:
           "The client secret of the OAuth2 client that should be used to authenticate the Connector on the Backbone. Defaults to the value you specified during 'cman init'.",
       })
+      .option("additional-configuration", {
+        alias: "c",
+        type: "array",
+        description: "Additional configuration for the connector. Use 'key=value' pairs separated by semicolons. Nested keys can be specified using ':' or '__'.",
+      })
       .check((argv) => {
         if (argv.id.trim().length === 0) return "The id cannot be empty."
         if (argv.id.toLowerCase() !== argv.id) return "The id must be all lowercase."
@@ -72,7 +79,19 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
 
     console.log("Creating connector...")
 
-    const connector = this._config.addConnector(args.version, id, args.description, args.dbConnectionString, args.baseUrl, args.clientId, args.clientSecret, args.port)
+    const additionalConfig = await parseConfigString(args.additionalConfiguration)
+
+    const connector = this._config.addConnector(
+      args.version,
+      id,
+      args.description,
+      args.dbConnectionString,
+      args.baseUrl,
+      args.clientId,
+      args.clientSecret,
+      args.port,
+      additionalConfig
+    )
     await this._config.save()
 
     await this._processManager.start(id)
