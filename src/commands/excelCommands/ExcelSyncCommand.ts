@@ -1,6 +1,8 @@
+import _ from "lodash"
 import xlsx from "node-xlsx"
 import * as yargs from "yargs"
 import { setDisplayName, waitForConnectorToBeHealthy } from "../../utils/connectorUtils.js"
+import { parseConfigString } from "../../utils/parseConfigString.js"
 import { BaseCommand } from "../BaseCommand.js"
 
 export interface ExcelSyncCommandArgs {
@@ -22,8 +24,11 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
 
     for (const connectorProperties of data.connectors) {
       if (!this._config.existsConnector(connectorProperties["connector-id"])) {
-        // TODO: combine data.defaults.additionalConfig with connectorProperties.additionalConfig
-        const additionalConfiguration = {}
+        const additionalConfiguration = _.defaultsDeep(
+          {},
+          parseConfigString(data.defaults["additional-configuration"]),
+          parseConfigString(connectorProperties["additional-configuration"])
+        )
 
         await this.createNewConnector(connectorProperties, data.defaults, additionalConfiguration)
         console.log(`Connector ${connectorProperties["connector-id"]} created.`)
@@ -140,6 +145,7 @@ class Parameters {
   public "backbone-base-url"?: string
   public "backbone-client-id"?: string
   public "backbone-client-secret"?: string
+  public "additional-configuration"?: string
 }
 
 class DefaultValues {
@@ -148,4 +154,5 @@ class DefaultValues {
   public "backbone-base-url"?: string
   public "backbone-client-id"?: string
   public "backbone-client-secret"?: string
+  public "additional-configuration"?: string
 }
