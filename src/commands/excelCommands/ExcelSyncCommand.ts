@@ -1,37 +1,30 @@
-import fs from "fs"
 import xlsx from "node-xlsx"
-import path from "path"
 import * as yargs from "yargs"
 import { setDisplayName, waitForConnectorToBeHealthy } from "../../utils/connectorUtils.js"
 import { BaseCommand } from "../BaseCommand.js"
 
 export interface ExcelSyncCommandArgs {
   file: string
-  additionalConfigLocation?: string
 }
 
 export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
   public static builder: yargs.BuilderCallback<any, ExcelSyncCommandArgs> = (yargs: yargs.Argv) =>
-    yargs
-      .option("file", {
-        type: "string",
-        description: "The path to the Excel file you want to synchronize with your connector instances.",
-        default: "./Connectors.xlsx",
-      })
-      .option("additional-config-location", {
-        type: "string",
-        description: "Additional configuration file that should be used when creating the connector. Must be a path to a JSON file.",
-      })
+    yargs.option("file", {
+      type: "string",
+      description: "The path to the Excel file you want to synchronize with your connector instances.",
+      default: "./Connectors.xlsx",
+    })
 
   protected async runInternal(args: ExcelSyncCommandArgs): Promise<void> {
-    const additionalConfiguration = await this.readAdditionalConfig(args.additionalConfigLocation)
-
     const data = this.readFromExcel(args.file)
 
     const createdConnectors: Parameters[] = []
 
     for (const connectorProperties of data.connectors) {
       if (!this._config.existsConnector(connectorProperties["connector-id"])) {
+        // TODO: combine data.defaults.additionalConfig with connectorProperties.additionalConfig
+        const additionalConfiguration = {}
+
         await this.createNewConnector(connectorProperties, data.defaults, additionalConfiguration)
         console.log(`Connector ${connectorProperties["connector-id"]} created.`)
         createdConnectors.push(connectorProperties)
@@ -51,22 +44,6 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     console.log("Sync completed. The following Connectors were created:")
 
     await this.showInstances(this._config.connectors.filter((c) => createdConnectors.some((p) => p["connector-id"] === c.id)))
-  }
-
-  private async readAdditionalConfig(location?: string): Promise<any> {
-    if (!location) return
-
-    const resolved = path.resolve(location)
-
-    if (!fs.existsSync(resolved)) throw new Error(`The file ${location} does not exist.`)
-
-    const fileContent = await fs.promises.readFile(resolved, "utf-8")
-
-    try {
-      return JSON.parse(fileContent)
-    } catch (_) {
-      throw new Error(`The file ${location} is not a valid JSON`)
-    }
   }
 
   private readFromExcel(filename: string) {
