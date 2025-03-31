@@ -1,6 +1,4 @@
 import chalk from "chalk"
-import fs from "fs"
-import path from "path"
 import * as yargs from "yargs"
 import { setDisplayName, waitForConnectorToBeHealthy } from "../utils/connectorUtils.js"
 import { BaseCommand } from "./BaseCommand.js"
@@ -14,7 +12,7 @@ export interface CreateCommandArgs {
   clientId?: string
   clientSecret?: string
   displayName?: string
-  additionalConfigLocation?: string
+  additionalConfiguration?: string
 }
 
 export class CreateCommand extends BaseCommand<CreateCommandArgs> {
@@ -47,9 +45,10 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
           "The client secret of the OAuth2 client that should be used to authenticate the Connector on the Backbone. Defaults to the value you specified during 'cman init'.",
       })
       .option("display-name", { type: "string", description: "The display name (attribute) of the connector." })
-      .option("additional-config-location", {
+      .option("additional-configuration", {
+        alias: "c",
         type: "string",
-        description: "Additional configuration file that should be used when creating the connector. Must be a path to a JSON file.",
+        description: "Additional configuration for the connector. Use 'key=value' pairs separated by semicolons. Nested keys can be specified using '.' or '__'.",
       })
       .check((argv) => {
         if (argv.id.trim().length === 0) return "The id cannot be empty."
@@ -80,7 +79,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
 
     console.log("Creating connector...")
 
-    const additionalConfig = await this.readAdditionalConfig(args.additionalConfigLocation)
+    const additionalConfig = await this.parseAdditionalConfiguration(args.additionalConfiguration)
 
     const connector = this._config.addConnector(args.version, id, args.dbConnectionString, args.baseUrl, args.clientId, args.clientSecret, args.port, additionalConfig)
     await this._config.save()
@@ -96,19 +95,22 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
     await this.showInstances([connector])
   }
 
-  private async readAdditionalConfig(location?: string): Promise<any> {
-    if (!location) return
+  private parseAdditionalConfiguration(configuration?: string): any {
+    if (!configuration) return
 
-    const resolved = path.resolve(location)
+    const configFields = configuration.split(";")
 
-    if (!fs.existsSync(resolved)) throw new Error(`The file ${location} does not exist.`)
+    const config: any = {}
+    for (const field of configFields) {
+      const [keyPart, value] = field.split("=")
+      if (!keyPart || !value) throw new Error(`Invalid additional configuration format. Expected 'key=value' pairs, but got '${field}'`)
 
-    const fileContent = await fs.promises.readFile(resolved, "utf-8")
+      const keys = keyPart.split(/\.|__/)
 
-    try {
-      return JSON.parse(fileContent)
-    } catch (_) {
-      throw new Error(`The file ${location} is not a valid JSON`)
+      const object = keys.slice(0, -1).reduce((acc, key) => (acc[key] ??= {}), config)
+      object[keys.at(-1)!] = value
     }
+
+    return config
   }
 }
