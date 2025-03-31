@@ -13,7 +13,7 @@ export interface CreateCommandArgs {
   baseUrl?: string
   clientId?: string
   clientSecret?: string
-  additionalConfiguration?: string
+  additionalConfiguration?: string[]
 }
 
 export class CreateCommand extends BaseCommand<CreateCommandArgs> {
@@ -48,7 +48,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
       })
       .option("additional-configuration", {
         alias: "c",
-        type: "string",
+        type: "array",
         description: "Additional configuration for the connector. Use 'key=value' pairs separated by semicolons. Nested keys can be specified using ':' or '__'.",
       })
       .check((argv) => {

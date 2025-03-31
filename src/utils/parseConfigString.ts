@@ -1,9 +1,12 @@
-export function parseConfigString(configuration?: string): any {
-  if (!configuration) return
+export function parseConfigString(configurations?: string[]): any {
+  if (!configurations) return
+
+  const config: any = {}
+
+  const configuration = configurations.join(";").trim()
 
   const configFields = configuration.split(";")
 
-  const config: any = {}
   for (const field of configFields) {
     const [keyPart, value] = field.split("=")
     if (!keyPart || !value) throw new Error(`Invalid additional configuration format. Expected 'key=value' pairs, but got '${field}'`)
