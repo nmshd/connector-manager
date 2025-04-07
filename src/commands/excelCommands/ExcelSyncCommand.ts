@@ -90,10 +90,10 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
         if (key) {
           obj[key as keyof Parameters] = row[index]?.toString()
         } else {
-          const keys = header.split(/:|__/)
+          const propertyPathElements = header.split(/:|__/)
 
-          const object = keys.slice(0, -1).reduce((acc, key) => (acc[key] ??= {}), obj.additionalConfiguration)
-          object[keys.at(-1)!] = parseString(row[index]?.toString())
+          const object = propertyPathElements.slice(0, -1).reduce((acc, key) => (acc[key] ??= {}), obj.additionalConfiguration)
+          object[propertyPathElements.at(-1)!] = parseString(row[index]?.toString())
         }
       }
 
@@ -116,10 +116,10 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
       if (key) {
         defaultValues[key as keyof DefaultValues] = row[index]
       } else {
-        const keys = header.split(/:|__/)
+        const propertyPathElements = header.split(/:|__/)
 
-        const object = keys.slice(0, -1).reduce((acc, key) => (acc[key] ??= {}), defaultValues.additionalConfiguration)
-        object[keys.at(-1)!] = parseString(row[index]?.toString())
+        const object = propertyPathElements.slice(0, -1).reduce((acc, key) => (acc[key] ??= {}), defaultValues.additionalConfiguration)
+        object[propertyPathElements.at(-1)!] = parseString(row[index]?.toString())
       }
     }
 
