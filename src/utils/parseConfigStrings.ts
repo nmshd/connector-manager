@@ -1,3 +1,5 @@
+import { parseString } from "./parseString.js"
+
 export function parseConfigStrings(configurations?: string[]): any {
   if (!configurations) return
 
@@ -18,12 +20,4 @@ export function parseConfigStrings(configurations?: string[]): any {
   }
 
   return config
-}
-
-export function parseString(value: string) {
-  try {
-    return JSON.parse(value)
-  } catch (_) {
-    return value
-  }
 }

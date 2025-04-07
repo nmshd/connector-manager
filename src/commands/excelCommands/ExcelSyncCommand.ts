@@ -2,7 +2,7 @@ import _ from "lodash"
 import xlsx from "node-xlsx"
 import * as yargs from "yargs"
 import { waitForConnectorToBeHealthy } from "../../utils/connectorUtils.js"
-import { parseString } from "../../utils/parseConfigStrings.js"
+import { parseString } from "../../utils/parseString.js"
 import { BaseCommand } from "../BaseCommand.js"
 
 export interface ExcelSyncCommandArgs {
