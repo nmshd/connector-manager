@@ -106,9 +106,9 @@ When running the above command the cman generated config is extended with the fo
 
 To archieve the same result with the excel sync just add the following line to the excel sheet:
 
-| id        | ... | modules**coreHttpApi**enabled |
-| --------- | --- | ----------------------------- |
-| {your-id} | ... | false                         |
+| id        | ... | modules\_\_coreHttpApi\_\_enabled |
+| --------- | --- | --------------------------------- |
+| {your-id} | ... | false                             |
 
 ## Update the Connector Manager
 
