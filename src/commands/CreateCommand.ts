@@ -1,7 +1,7 @@
 import chalk from "chalk"
 import * as yargs from "yargs"
 import { waitForConnectorToBeHealthy } from "../utils/connectorUtils.js"
-import { parseConfigString } from "../utils/parseConfigString.js"
+import { parseConfigStrings } from "../utils/parseConfigStrings.js"
 import { BaseCommand } from "./BaseCommand.js"
 
 export interface CreateCommandArgs {
@@ -79,7 +79,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
 
     console.log("Creating connector...")
 
-    const additionalConfig = await parseConfigString(args.additionalConfiguration)
+    const additionalConfig = await parseConfigStrings(args.additionalConfiguration)
 
     const connector = this._config.addConnector(
       args.version,

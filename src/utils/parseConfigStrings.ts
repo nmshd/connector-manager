@@ -1,4 +1,4 @@
-export function parseConfigString(configurations?: string[]): any {
+export function parseConfigStrings(configurations?: string[]): any {
   if (!configurations) return
 
   const config: any = {}
