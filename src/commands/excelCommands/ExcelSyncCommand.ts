@@ -1,6 +1,8 @@
+import _ from "lodash"
 import xlsx from "node-xlsx"
 import * as yargs from "yargs"
-import { setDisplayName, waitForConnectorToBeHealthy } from "../../utils/connectorUtils.js"
+import { waitForConnectorToBeHealthy } from "../../utils/connectorUtils.js"
+import { parseString } from "../../utils/parseString.js"
 import { BaseCommand } from "../BaseCommand.js"
 
 export interface ExcelSyncCommandArgs {
@@ -22,7 +24,9 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
 
     for (const connectorProperties of data.connectors) {
       if (!this._config.existsConnector(connectorProperties["connector-id"])) {
-        await this.createNewConnector(connectorProperties, data.defaults)
+        const additionalConfiguration = _.defaultsDeep({}, data.defaults.additionalConfiguration, connectorProperties.additionalConfiguration)
+
+        await this.createNewConnector(connectorProperties, data.defaults, additionalConfiguration)
         console.log(`Connector ${connectorProperties["connector-id"]} created.`)
         createdConnectors.push(connectorProperties)
         await this._config.save()
@@ -51,17 +55,19 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     return new ExcelData(parameters, defaultValues)
   }
 
-  private async createNewConnector(parameters: Parameters, defaults: DefaultValues) {
+  private async createNewConnector(parameters: Parameters, defaults: DefaultValues, additionalConfiguration: any) {
     console.log(`Creating connector ${parameters["connector-id"]}...`)
 
     const connector = this._config.addConnector(
-      parameters["connector-version"] ?? defaults["connector-version"] ?? (await this._releaseManager.getLatestVersionNumber()),
+      parameters["connector-version"] ?? defaults["connector-version"] ?? (await this._releaseManager.getLatestVersionNumber(this._config.repository)),
       parameters["connector-id"],
+      parameters["connector-description"]?.trim(),
       parameters["connector-db-connection-string"] ?? defaults["connector-db-connection-string"],
       parameters["backbone-base-url"] ?? defaults["backbone-base-url"],
       parameters["backbone-client-id"] ?? defaults["backbone-client-id"],
       parameters["backbone-client-secret"] ?? defaults["backbone-client-secret"],
-      parameters["connector-port"] ? parseInt(parameters["connector-port"]) : undefined
+      parameters["connector-port"] ? parseInt(parameters["connector-port"]) : undefined,
+      additionalConfiguration
     )
 
     await this._config.save()
@@ -69,8 +75,6 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
     await this._processManager.start(connector.id)
 
     await waitForConnectorToBeHealthy(connector)
-
-    if (parameters["organization-display-name"]) await setDisplayName(connector, parameters["organization-display-name"].trim())
   }
 
   private parseParameters(array: string[][]): Parameters[] {
@@ -86,7 +90,10 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
         if (key) {
           obj[key as keyof Parameters] = row[index]?.toString()
         } else {
-          throw new Error(`There is no matching parameter for the column '${header}'`)
+          const propertyPathElements = header.split(/:|__/)
+
+          const object = propertyPathElements.slice(0, -1).reduce((acc, key) => (acc[key] ??= {}), obj.additionalConfiguration)
+          object[propertyPathElements.at(-1)!] = parseString(row[index]?.toString())
         }
       }
 
@@ -109,7 +116,10 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
       if (key) {
         defaultValues[key as keyof DefaultValues] = row[index]
       } else {
-        throw new Error(`There is no matching parameter for the column '${header}'`)
+        const propertyPathElements = header.split(/:|__/)
+
+        const object = propertyPathElements.slice(0, -1).reduce((acc, key) => (acc[key] ??= {}), defaultValues.additionalConfiguration)
+        object[propertyPathElements.at(-1)!] = parseString(row[index]?.toString())
       }
     }
 
@@ -129,13 +139,14 @@ class ExcelData {
 
 class Parameters {
   public "connector-id" = ""
+  public "connector-description"?: string
   public "connector-db-connection-string"?: string
   public "connector-port"?: string
   public "connector-version"? = ""
-  public "organization-display-name"?: string
   public "backbone-base-url"?: string
   public "backbone-client-id"?: string
   public "backbone-client-secret"?: string
+  public additionalConfiguration: any = {}
 }
 
 class DefaultValues {
@@ -144,4 +155,5 @@ class DefaultValues {
   public "backbone-base-url"?: string
   public "backbone-client-id"?: string
   public "backbone-client-secret"?: string
+  public additionalConfiguration: any = {}
 }
