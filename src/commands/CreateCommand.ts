@@ -62,6 +62,7 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
         "$0 --id connector1 --version v6.14.3 --port 9000 --db-connection-string mongodb://localhost:27017 --base-url https://backbone.example.com --client-id myClientId --client-secret myClientSecret",
         "Create a new connector with all possible parameters."
       )
+      .example("$0 --id connector1 --additional-configuration 'key1=value1;key2=value2' -c 'nested__key=false'", "Create a new connector with additional configuration.")
 
   protected async runInternal(args: CreateCommandArgs): Promise<void> {
     args.version ??= await this._releaseManager.getLatestVersionNumber(this._config.repository)
