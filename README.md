@@ -105,7 +105,7 @@ When running the above command the cman generated config is extended with the fo
 }
 ```
 
-To archieve the same result with the excel sync just add the following line to the excel sheet:
+To achieve the same result with the excel sync just add the following line to the excel sheet:
 
 | id        | ... | modules\_\_coreHttpApi\_\_enabled | debug |
 | --------- | --- | --------------------------------- | ----- |
