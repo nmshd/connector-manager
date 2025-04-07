@@ -1,5 +1,6 @@
 import { ConnectorClient } from "@nmshd/connector-sdk"
 import fs from "fs"
+import _ from "lodash"
 import path from "path"
 
 export class Config {
@@ -98,7 +99,8 @@ export class Config {
     platformBaseUrl?: string,
     platformClientId?: string,
     platformClientSecret?: string,
-    port?: number
+    port?: number,
+    additionalConfiguration?: any
   ): ConnectorDefinition {
     if (this.existsConnector(id)) {
       throw new Error(`A connector with the id ${id} already exists.`)
@@ -110,19 +112,24 @@ export class Config {
     platformClientSecret = platformClientSecret === "" || platformClientSecret === undefined ? this.platformClientSecret : platformClientSecret
     port = port === undefined || port === 0 ? this.findFreePort() : port
 
-    const connector = new ConnectorDefinition(this.appDir, id, description, version, {
-      database: {
-        connectionString: dbConnectionString,
-        dbName: id,
+    const config = _.defaultsDeep(
+      {
+        database: {
+          connectionString: dbConnectionString,
+          dbName: id,
+        },
+        transportLibrary: {
+          baseUrl: platformBaseUrl,
+          platformClientId: platformClientId,
+          platformClientSecret: platformClientSecret,
+        },
+        logging: { categories: { default: { appenders: ["console"] } } },
+        infrastructure: { httpServer: { apiKey: "", port: port } },
       },
-      transportLibrary: {
-        baseUrl: platformBaseUrl,
-        platformClientId: platformClientId,
-        platformClientSecret: platformClientSecret,
-      },
-      logging: { categories: { default: { appenders: ["console"] } } },
-      infrastructure: { httpServer: { apiKey: "", port: port } },
-    })
+      additionalConfiguration
+    )
+
+    const connector = new ConnectorDefinition(this.appDir, id, description, version, config)
 
     connector.rotateApiKey()
 
