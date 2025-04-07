@@ -5,9 +5,7 @@ export function parseConfigStrings(configurations?: string[]): any {
 
   const config: any = {}
 
-  const configuration = configurations.join(";").trim()
-
-  const configFields = configuration.split(";")
+  const configFields = configurations.flatMap((config) => config.trim().split(";"))
 
   for (const field of configFields) {
     const [propertyPath, value] = field.split("=")
