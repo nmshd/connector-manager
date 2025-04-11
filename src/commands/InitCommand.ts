@@ -6,7 +6,7 @@ export interface InitCommandArgs {
   baseUrl: string
   clientId: string
   clientSecret: string
-  repository: string
+  repository?: string
 }
 
 export class InitCommand extends BaseCommand<InitCommandArgs> {
@@ -36,7 +36,6 @@ export class InitCommand extends BaseCommand<InitCommandArgs> {
       })
       .option("repository", {
         type: "string",
-        demandOption: true,
         description: "The repo the connector zips should be fetched from. Defaults to 'nmshd/connector'.",
       })
       .example(
