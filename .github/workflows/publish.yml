@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: current
-          registry-url: https://registry.npmjs.org/
+          registry-url: https://registry.npmjs.org
       - run: bash .ci/build.sh
       - run: bash .ci/publish.sh
         env:
