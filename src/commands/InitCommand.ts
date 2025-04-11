@@ -6,7 +6,7 @@ export interface InitCommandArgs {
   baseUrl: string
   clientId: string
   clientSecret: string
-  repository: string
+  repository?: string
 }
 
 export class InitCommand extends BaseCommand<InitCommandArgs> {
