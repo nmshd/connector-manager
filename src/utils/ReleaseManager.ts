@@ -53,7 +53,7 @@ export class ReleaseManager {
     if (!release) return `The release ${chalk.red(version)} does not exist.`
 
     if (!release.assets.some((asset) => asset.name.endsWith(".zip") && asset.state === "uploaded")) {
-      return `The release ${chalk.red(version)} is not supported. Only versions greater than 6.14.2 are supported.`
+      return `The release ${chalk.red(version)} (${release.html_url}) is not supported. The release must contain an asset called "connector-${version}.zip", which contains the built sources of the Connector.`
     }
   }
 
