@@ -30,7 +30,11 @@ export class CreateCommand extends BaseCommand<CreateCommandArgs> {
         description:
           "The version of the connector to create. You can find a list of available versions on https://github.com/nmshd/connector/releases. If none is passed, the latest version is used.",
       })
-      .option("port", { type: "number", description: "The port the connector should listen on. Defaults to 3000." })
+      .option("port", {
+        type: "number",
+        description:
+          "The port the connector should listen on. If no port is specified, a port will be assigned automatically. For that, the Connector Manager starts with port 8080, and increments it by 1 for every connector.",
+      })
       .option("db-connection-string", {
         type: "string",
         description: "The connection string for the database the connector should use. Defaults to the value you specified during 'cman init'.",
