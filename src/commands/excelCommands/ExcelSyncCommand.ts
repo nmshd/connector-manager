@@ -24,7 +24,7 @@ export class ExcelSyncCommand extends BaseCommand<ExcelSyncCommandArgs> {
 
     for (const connectorProperties of data.connectors) {
       if (!this._config.existsConnector(connectorProperties["connector-id"])) {
-        const additionalConfiguration = _.defaultsDeep({}, data.defaults.additionalConfiguration, connectorProperties.additionalConfiguration)
+        const additionalConfiguration = _.defaultsDeep({}, connectorProperties.additionalConfiguration, data.defaults.additionalConfiguration)
 
         await this.createNewConnector(connectorProperties, data.defaults, additionalConfiguration)
         console.log(`Connector ${connectorProperties["connector-id"]} created.`)
