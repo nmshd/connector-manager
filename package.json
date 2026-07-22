@@ -41,16 +41,16 @@
     "yargs": "^18.0.0"
   },
   "devDependencies": {
-    "@js-soft/eslint-config-ts": "^2.0.6",
-    "@js-soft/license-check": "^1.0.11",
+    "@js-soft/eslint-config-ts": "^2.0.7",
+    "@js-soft/license-check": "^1.0.12",
     "@types/adm-zip": "^0.5.8",
     "@types/lodash": "^4.17.24",
     "@types/node": "^24.7.2",
     "@types/prompts": "^2.4.9",
     "@types/tail": "^2.2.3",
     "@types/yargs": "^17.0.35",
-    "eslint": "^10.6.0",
-    "prettier": "^3.9.4",
+    "eslint": "^10.7.0",
+    "prettier": "^3.9.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
