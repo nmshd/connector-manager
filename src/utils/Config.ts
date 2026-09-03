@@ -1,4 +1,4 @@
-import { ConnectorClient } from "@nmshd/connector-sdk"
+import { ApiKeyAuthenticator, ConnectorClient } from "@nmshd/connector-sdk"
 import fs from "fs"
 import _ from "lodash"
 import path from "path"
@@ -188,7 +188,7 @@ export class ConnectorDefinition {
   public get sdk(): ConnectorClient {
     return ConnectorClient.create({
       baseUrl: `http://localhost:${this.config.infrastructure.httpServer.port}`,
-      apiKey: this.config.infrastructure.httpServer.apiKey,
+      authenticator: new ApiKeyAuthenticator(this.config.infrastructure.httpServer.apiKey),
     })
   }
 
